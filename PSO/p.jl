@@ -6,7 +6,7 @@ function a()
     a::nothing
 end
 
-function main(pop::Int)
+function main(pop::Int, para::Int = 2)
     c1::Float64 = 0.49445
     c2::Float64 = 0.49445
     maxgen::Int = 100
@@ -14,5 +14,6 @@ function main(pop::Int)
     Vmin = -0.5
     popmax::Int = 2
     popmin::Int = -2
-    P = Array{Float64}(undef, (pop))
+    P = Array{Float64}(undef, (pop, para))
+    nothing
 end
