@@ -4,8 +4,7 @@ using Plots
 using Statistics, LinearAlgebra, Random
 Random.seed!(1)
 
-max_i::Int = 1000
-max_cost = 999_999_999
+
 
 f(x, y) = x*sin(4x) + 1.1y*sin(2y)
 
@@ -47,6 +46,8 @@ function cross(S1::Vector, S2::Vector, M::Int)
 end
 
 function main(pop::Int, mut::Float64, para::Int = 2)
+    max_i::Int = 1000
+    max_cost = 999_999_999
     var_min = -10
     var_max = 20
     P = (var_max - var_min)*randn(Float64, (pop, para)) .+ var_min
