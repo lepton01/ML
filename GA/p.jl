@@ -4,14 +4,6 @@ using Plots
 using Statistics, LinearAlgebra, Random
 Random.seed!(1)
 
-#=
-mutable struct crom
-    g::AbstractVector
-    fs::Float64
-end
-cr = crom([], 0)
-=#
-
 max_i::Int = 1000
 max_cost = 999_999_999
 
