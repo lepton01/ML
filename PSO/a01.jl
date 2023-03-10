@@ -7,15 +7,15 @@ Random.seed!(1)
 
 
 #f(x::Real, y::Real) = sqrt(x*y)*sin(x)*sin(y)
-#[0, 10]
+#v_max, v_min = 0, 10
 
-f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x) - 0.4cos(4π*y) + 0.7
+#f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x) - 0.4cos(4π*y) + 0.7
 #f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x)*0.4cos(4π*y) + 0.3
-#f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x + 4π*y) + 0.3
-#[-100, 100]
+f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x + 4π*y) + 0.3
+v_max::Int, v_min::Int = -100, 100
 
 #f(x::Real, y::Real) = (x + 2y -7)^2 + (2x + y -5)^2
-#[-10, 10]
+#v_max, v_min = -10, 10
 
 #=
 function fitness(P::AbstractArray, L::AbstractArray, g_best, g_best_fit)
@@ -76,14 +76,17 @@ function PSOmax(pop_size::Int, para::Int = 2)
     P
 end
 
-function PSOmin(pop_size::Int, max_i::Int, para::Int = 2)
-    c1::Float64 = 0.49445
-    c2::Float64 = 0.49445
+function PSOmin(pop_size::Int = 10, max_i::Int = 100, para::Int = 2)
+    #c1::Float64 = 0.49445
+    #c2::Float64 = 0.49445
+
+    c1::Float64 = 0.4
+    c2::Float64 = 0.65
 
     #max_i::Int = 5000
 
-    v_max = 0.5
-    v_min = -0.5
+    #v_max = 0.5
+    #v_min = -0.5
 
     pop_max::Int = 100
     pop_min::Int = -100
