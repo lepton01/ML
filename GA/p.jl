@@ -4,7 +4,30 @@ using Plots
 using Statistics, LinearAlgebra, Random
 Random.seed!(1)
 
+#f(x::Real, y::Real) = x*sin(4x) + 1.1y*sin(2y)
 
+
+#f(x::Real, y::Real) = sqrt(x*y)*sin(x)*sin(y)
+#[0, 10]
+
+f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x) - 0.4cos(4π*y) + 0.7
+#f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x)*0.4cos(4π*y) + 0.3
+#f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x + 4π*y) + 0.3
+#[-100, 100]
+
+#f(x::Real, y::Real) = (x + 2y -7)^2 + (2x + y -5)^2
+#[-10, 10]
+
+#=
+mutable struct crom
+    g::AbstractVector
+    fs::Float64
+end
+cr = crom([], 0)
+=#
+
+max_i::Int = 1000
+#max_cost = 999_999_999
 
 f(x, y) = x*sin(4x) + 1.1y*sin(2y)
 
@@ -46,8 +69,6 @@ function cross(S1::Vector, S2::Vector, M::Int)
 end
 
 function main(pop::Int, mut::Float64, para::Int = 2)
-    max_i::Int = 1000
-    max_cost = 999_999_999
     var_min = -10
     var_max = 20
     P = (var_max - var_min)*randn(Float64, (pop, para)) .+ var_min
