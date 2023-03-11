@@ -5,15 +5,15 @@ using Statistics, Random, LinearAlgebra
 Random.seed!(1)
 
 #f(x::Real, y::Real) = x*sin(4x) + 1.1y*sin(2y)
-
+#pos_max::Int, pos_min::Int = 0, 10
 
 #f(x::Real, y::Real) = sqrt(x*y)*sin(x)*sin(y)
 #pos_max::Int, pos_min::Int = 0, 10
 
-f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x) - 0.4cos(4π*y) + 0.7
+#f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x) - 0.4cos(4π*y) + 0.7
 #f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x)*0.4cos(4π*y) + 0.3
 #f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x + 4π*y) + 0.3
-pos_max::Int, pos_min::Int = -100, 100
+#pos_max::Int, pos_min::Int = -100, 100
 
 #f(x::Real, y::Real) = (x + 2y -7)^2 + (2x + y -5)^2
 #pos_max::Int, pos_min::Int = -10, 10
@@ -35,7 +35,6 @@ end
 function mov(P::AbstractArray, V::AbstractArray, fit::Vector, p_best::Int)
     nothing
 end
-=#
 
 function PSOmax(pop_size::Int, para::Int = 2)
     c1::Float64 = 0.49445
@@ -76,13 +75,14 @@ function PSOmax(pop_size::Int, para::Int = 2)
     end
     P
 end
+=#
 
-function PSOmin(pop_size::Int = 10, max_i::Int = 100, para::Int = 2)
+function PSOmin(pop_size::Int = 100, max_i::Int = 100, para::Int = 2)
     #c1::Float64 = 0.49445
     #c2::Float64 = 0.49445
 
-    c1::Float64 = 0.4
-    c2::Float64 = 0.65
+    c1::Float64 = 0.5
+    c2::Float64 = 0.5
 
     #max_i::Int = 5000
 
@@ -121,5 +121,5 @@ function PSOmin(pop_size::Int = 10, max_i::Int = 100, para::Int = 2)
             end
         end
     end
-    println("Coords: $(g_best), Valor: $(f(g_best[1], g_best[2])), Prom_x:$(mean(L[:, 1])), Prom_y: $(mean(L[:, 2]))")
+    println("Coords: $(g_best),\nValor: $(f(g_best[1], g_best[2])),\nProm: $(mean(L[:, 1])), $(mean(L[:, 2]))")
 end
