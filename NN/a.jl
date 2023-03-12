@@ -32,15 +32,26 @@ end
 function fwd_prop(X::Array{Float64}, para::Dict{String, Array{Float64}}, activ::Tuple)::Tuple
     n_layers::Int = length(para) + 2
     cache = Dict{String, Array{Float64}}()
-    cache[string("A", 0)] = X
+    cache[string("a", 0)] = X
 
     for i in 1:n_layers
         begin
-            Wi = para[string("W", i)]
-            Ai = cache[string("A", i - 1)]
-            yi = zeros(Float64, (size(Wi)[1], size(Ai)[2]))
+            wi = para[string("w", i)]
+            ai_ant = cache[string("a", i - 1)]
+            yi = zeros(Float64, (size(wi)[1], size(ai)[2]))
+            mul!(yi, wi, ai_ant)
+            yi .+= para[string("b", i)]
         end
+        ai = activ[i].(yi)
+
+        cache[string("y", i)] = yi
+        cache[string("a", i)] = ai
     end
+    ai, cache
+end
+
+function cost()
+    
 end
 
 function main()
