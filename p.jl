@@ -1,0 +1,97 @@
+#28/02/2023
+
+using Plots
+using Statistics, LinearAlgebra, Random
+Random.seed!(1)
+
+#f(x::Real, y::Real) = x*sin(4x) + 1.1y*sin(2y)
+#pos_max::Int, pos_min::Int = 0, 10
+
+#f(x::Real, y::Real) = sqrt(x*y)*sin(x)*sin(y)
+#pos_max::Int, pos_min::Int = 0, 10
+
+f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x) - 0.4cos(4π*y) + 0.7
+#f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x)*0.4cos(4π*y) + 0.3
+#f(x::Real, y::Real) = x^2 + 2y^2 - 0.3cos(3π*x + 4π*y) + 0.3
+pos_max::Int, pos_min::Int = -100, 100
+
+#f(x::Real, y::Real) = (x + 2y -7)^2 + (2x + y -5)^2
+#pos_max::Int, pos_min::Int = -10, 10
+
+#f(x, y) = x*sin(4x) + 1.1y*sin(2y)
+
+function fitness(P::AbstractArray)
+    v = Vector{Float64}(undef, length(P[:, 1]))
+
+    for i in eachindex(v)
+        v[i] = f(P[i, 1], P[i, 2])
+    end
+    v
+end
+
+function cross(S1::Vector, S2::Vector, M::Int, pop::Int)
+    while length(S1) < Int(ceil(pop/2)) || length(S2) < Int(ceil(pop/2))
+        xp = Int(ceil(2rand()))
+        α = rand()
+        ma = Int(ceil(2M*rand()))
+        pa = Int(ceil(2M*rand()))
+
+        if xp == 1 && ((1.0 - α)*S1[ma] + α*S1[pa] < pos_max && (1.0 - α)*S1[ma] + α*S1[pa] > pos_min && (1.0 - α)*S1[pa] + α*S1[ma] < pos_max && (1.0 - α)*S1[pa] + α*S1[ma] > pos_min)
+            push!(S1, (1.0 - α)*S1[ma] + α*S1[pa])
+
+            push!(S2, S2[pa])
+
+            push!(S1, (1.0 - α)*S1[pa] + α*S1[ma])
+
+            push!(S2, S2[ma])
+        elseif xp == 2 && ((1.0 - α)*S2[pa] + α*S2[ma] < pos_max && (1.0 - α)*S2[pa] + α*S2[ma] > pos_min && (1.0 - α)*S1[ma] + α*S1[pa] < pos_max && (1.0 - α)*S1[ma] + α*S1[pa] > pos_min)
+            push!(S2, (1.0 - α)*S2[pa] + α*S2[ma])
+
+            push!(S1, S1[pa])
+
+            push!(S1, (1.0 - α)*S1[ma] + α*S1[pa])
+
+            push!(S2, S2[ma])
+        end
+    end
+    S1, S2
+end
+
+function main(pop::Int = 1000, max_i::Int = 1000, mut::Float64 = 0.2, para::Int = 2)
+    #var_min = -10
+    #var_max = 20
+    P = (pos_max - pos_min)*randn(Float64, (pop, para)) .+ pos_min
+    sel = 0.5
+    keep = Int(floor(sel*pop))
+    M = Int(round((pop - keep)/2))
+    n_mut = Int(ceil((pop - 1)*mut*para))
+
+    for i in 1:max_i
+        fit = fitness(P)
+        S1 = Float64[]
+        S2 = Float64[]
+        c = 1
+        while length(S1) < Int(floor(pop/2))
+            if c < pop && fit[c] <= median(c)
+                push!(S1, P[c, 1])
+                push!(S2, P[c, 2])
+            elseif c == pop
+                a = ϵ = Int(ceil(pop*rand()))
+                b = ϵ = Int(ceil(pop*rand()))
+                push!(S1, P[a, 1])
+                push!(S2, P[b, 2])
+            end
+            c += 1
+        end
+        v1 = Float64[]
+        v2 = Float64[]
+        v1, v2 = cross(S1, S2, M, pop)
+        for q in 1:n_mut
+            ϵ = Int(ceil(length(S1)*rand()))
+            ζ = randn()
+            v1[ϵ], v2[ϵ] = (1 - 0.1ζ)*v1[ϵ], (1 - 0.1ζ)*v2[ϵ]
+        end
+        P = hcat(v1, v2)
+    end
+    println("$(mean(P[:, 1])), $(mean(P[:, 2])),\nValor: $(f(mean(P[:, 1]), mean(P[:, 2])))")
+end
