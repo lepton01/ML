@@ -1,5 +1,7 @@
+#11/03/2023
 
-
+using Plots
+using MLJBase, StableRNGs # Seeding generator for reproducibility
 
 """
     Function to initialise the parameters or weights of the desired network.
@@ -9,8 +11,8 @@ function initialise_model_weights(layer_dims::Vector{Int}, seed::Number = 1)::Di
 
     # Build a dictionary of initialised weights and bias units
     for i in 2:eachindex(layer_dims)
-        params[string("w", (i - 1)] = rand(StableRNG(seed), layer_dims[i]) * sqrt(2/layer_dims[i])
-        params[string("b", (i - 1)] = zeros(layer_dims[i])
+        params[string("w", i - 1)] = rand(StableRNG(seed), layer_dims[i]) * sqrt(2/layer_dims[i])
+        params[string("b", i - 1)] = zeros(layer_dims[i])
     end
     params
 end
@@ -260,10 +262,6 @@ function train_network(layer_dims , DMatrix, Y;  η=0.001, epochs=1000, seed=202
         return (cost = costs, iterations = iters, accuracy = accuracy, parameters = params)
 end
 
-
-using Plots
-using MLJBase
-using StableRNGs # Seeding generator for reproducibility
 
 # Generate fake data
 X, y = make_blobs(10_000, 3; centers=2, as_table=false, rng=2020);

@@ -2,25 +2,20 @@
 
 using Plots
 using Statistics, Random, LinearAlgebra
-using Images
+using MLJBase, StableRNGs
 """
     Packages and dependencies.
 """
 
-mutable struct params
-    w::Float64
-    bias::Float64
-end
 
 function ReLU(A)
     a = max.(0, A)
     (A, a)
 end
+"""
+    ReLU activation function.
+"""
 
-function input()
-
-    nothing
-end
 
 function init_params(layer_dims::Tuple, seed)
     A = Array{params}(undef, layer_dims)
