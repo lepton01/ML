@@ -17,7 +17,7 @@ end
 """
 
 
-function init_params(layer_dims::Vector)
+function init_para(layer_dims::Vector)::Dict{String, Array{Float64}}
     A = Dict{String, Array{Float64}}()
     for i in 2:eachindex(layer_dims)
         A[string("w", i - 1)] = rand(Float64, (layer_dims[i], layer_dims[i - 1]))/sqrt(i - 1)
@@ -29,9 +29,10 @@ end
     Initialization of weights and biases.
 """
 
+
 function fwd_prop(X::Array{Float64},
     para::Dict{String, Array{Float64}},
-    aktiv::Tuple)::Tuple
+    aktiv::Tuple)
 
     n_layers::Int = length(para) + 2
     cache = Dict{String, Array{Float64}}()
@@ -56,6 +57,7 @@ end
     Forward propagation.
 """
 
+
 function cost_bin(A::Array{Float64},
     B::Array{Float64})::Float64
 
@@ -66,6 +68,7 @@ end
 """
     Cost computation.
 """
+
 
 function back_prop(A::Array,
     B::Array,
@@ -86,14 +89,22 @@ function back_prop(A::Array,
     grads = Dict{String, Array{Float64}}()
     for i in n_layers - 1:-1:1
         dy = dA.*aktiv[i].(cache[string("y", i)])
-        grads[string("dw", i)] = 1/m.*(dy*transpose(caches[string("A", l-1)]))
+        grads[string("dw", i)] = 1/m.*(dy*transpose(cache[string("A", l-1)]))
         grads[string("db", i)] = 1/m.*sum(dy, dims = 2)
-        dA = transpose(parameters[string("W", l)])*dy
+        dA = transpose(para[string("W", l)])*dy
     end
     grads
 end
+"""
+    Calculate changes in the parameters.
+"""
 
-function up_para(para::Dict{String, Array{Float32}}, grads::Dict{String, Array{Float32}}, layer_dims::Array{Int}, learn_rate::Number)::Dict{String, Array{Float32}}
+
+function up_para(para::Dict{String, Array{Float64}},
+    grads::Dict{String, Array{Float64}},
+    layer_dims::Array{Int},
+    learn_rate::Number)::Dict{String, Array{Float64}}
+
     n_layers = length(layer_dims)
     for i = 1:n_layers - 1
         para[string("w", i)] -= learn_rate.*grads[string("dw", i)]
@@ -101,25 +112,164 @@ function up_para(para::Dict{String, Array{Float32}}, grads::Dict{String, Array{F
     end
     para
 end
+"""
+    Update parameters.
+"""
 
-function get_back_activations(activations)
-    activations_back = []
-    for activation in activations
-        push!(activations_back, @eval ($(Symbol("$activation", "_back"))))
+
+function get_activ(aktiv)
+    aktiv_back = []
+    for activation in aktiv
+        push!(aktiv_back, @eval($(Symbol("$activation", "_back"))))
     end
-    activations_back = Tuple(activations_back)
-    return activations_back
+    aktiv_back = Tuple(aktiv_back)
+    aktiv_back
 end
+"""
+    Obtain the activations.
+"""
 
-# Prevent Rank 0 array and use Float32 for better consistency
+
 function reshape_A(A::Array)
-    A = convert(Array{Float32, ndims(A)}, A)
+    A = convert(Array{Float64, ndims(A)}, A)
     A = reshape(A, 1, :)
     A
 end
+"""
+    ...
+"""
 
-function main()
-    layers::Int = 2
-    w = rand()
-    nothing
+
+function neural_network_dense(X, Y,
+    layer_dims::Array{Int},
+    n_it::Int,
+    learn_rate::Number;
+    activations = nothing,
+    print_stats = false,
+    parameters = nothing,
+    resume = false,
+    checkpoint_steps=100)
+
+    n_layers = length(layer_dims) # calculate number of layers
+    Y = reshape_Y(Y)
+    @assert ndims(Y) == 2
+
+    begin
+        # if activations are not given, assume that all hidden layers have relu and output layer has sigmoid
+        if activations === nothing
+            activations = Array{Function}(undef, num_layers-1)
+            for i = 1:n_layers - 2
+                activations[i] = relu
+            end
+            activations[n_layers - 1] = sigmoid
+        end
+        activations = Tuple(activations)
+        activations_back = get_back_activations(activations)
+    end
+
+    begin
+        # Check if training has to resume or start over form beginning
+        init_params = false
+        if !resume
+            init_params=true
+        elseif (resume && parameters==nothing)
+            println("Cannot resume without parameters, pass parameters=parameters to resume training. Reinitializing parameters")
+            init_params=true
+        end
+
+        # initialize params if it has to
+        if init_params
+            parameters = initialize_parameters(layer_dims, Y)
+        end
+    end
+
+    if print_stats
+        for i in eachindex(parameters)
+            println("\tInitial Mean of parameter ", i, " is ", mean(parameters[i]))
+            println("\tInitial Variance of parameter ", i, " is ", var(parameters[i]))
+        end
+    end
+
+    # pass through the whole dataset num_iterations times
+    begin
+        for iteration = 1:num_iterations
+            @timeit to "forward prop" Ŷ, caches = forward_prop(X, parameters, activations)
+            @timeit to "backprop" grads = backward_prop(Y, Ŷ, parameters, caches, layer_dims, activations_back)
+            @timeit to "update params" parameters = update_parameters(parameters, grads, layer_dims, learning_rate)
+
+            @timeit to "print stats" begin
+                # print stats every few steps
+                if iteration % checkpoint_steps == 0
+                    cost = cost_binary(Y, Ŷ)
+                    println("Cost at iteration $iteration is $cost")
+                    if print_stats
+                        for i in eachindex(parameters)
+                            println("\tMean of parameter ", i, " is ", mean(parameters[i]))
+                            println("\tVariance of parameter ", i, " is ", var(parameters[i]))
+                        end
+                    end
+                end
+            end
+        end
+    end
+    parameters, activations
 end
+"""
+    neural_network_dense(X, Y, layer_dims::Array{Int}, num_iterations::Int, learning_rate::Number; activations=Nothing, print_stats=false, parameters=nothing, resume=false, checkpoint_steps=100)
+    Build and train a dense neural network for binary classification. Performs batch gradient descent for optimization and uses binary logistic loss for cost function.
+    Also supports resuming training from previously trained parameters.
+    Parameters:
+    - `X`: training inputs (the first value in size of this should be the same as the first value in layer_dims)
+    - `Y`: training outputs (for binary classification, first value of size should be 1)
+    - `layer_dims`: Number of neurons in each layer. First layer size should be equal to the number of features in input. Output layer should be 1 in case of binary classification
+    - `num_iterations`: Number of iterations to train for.
+    - `learning_rate`: for gradient descent optimizer
+    - `activations` (optional): A tuple of activation functions for every layer other than the input layer (default: (relu, relu...., sigmoid))
+    - `print_stats` (optional): Whether to print mean and variance of parameters for every `checkpoint_steps` steps (Statistics package must be imported to use this) (default: false)
+    - `checkpoint_steps` (optional): the loss (and stats, if print_stats is true) is printed every `checkpoint_steps` steps (default: 100)
+    - `resume` (optional): whether to resume training by using the given parameters (if parameters are not given, they are initialized again) (default: false)
+    - `parameters` (optional): parameters for resuming training from checkpoint. Used only if resume is true (default: nothing)
+    Returns:
+    - `parameters`: trained parameters
+    - `activations`: activations used in training (for passing them to `predict` function)
+"""
+
+
+function predict(X, Y, para::Array, activations::Tuple)
+    m = size(X)[2]w
+    n = length(para)
+    predicts = zeros((1, m))
+
+    # Copy Y to CPU
+    if Y !== nothing
+        Y = Array(Y)
+        Y = reshape_Y(Y)
+    end
+
+    probs, cache = forward_prop(X, para, activations)
+    begin
+        probs = Array(probs)
+        for i = 1:m
+            probs[1, i] > 0.5 ? predicts[1, i] = 1 : predicts[1, i] = 0
+        end
+    end
+
+    accuracy = nothing
+    if Y !== nothing
+        accuracy = sum(predicts .== Y)/m
+        println("Accuracy is $(accuracy*100)%.")
+    end
+    predicts, accuracy
+end
+"""
+    predict(X, Y, parameters, activations::Tuple)
+    Predict using the trained parameters and calculate the accuracy.
+    Parameters:
+    - `X`: testing inputs
+    - `Y`: outputs to check with
+    - `parameters`: trained parameters which is taken from the output of `neural_network_dense`
+    - `activations`: also given by the outputs of `neural_network_dense`
+    Returns:
+    - `predicts`: predictions from the NN
+    - `accuracy`: accuracy of predictions
+"""
