@@ -72,7 +72,8 @@ function cost_bin(A::Array{Float64},
     B::Array{Float64})::Float64
 
     @assert length(A) == length(B) "Not the same size."
-    cost = - sum(A.*log.(B) .+ (1 .- A).*log.(1 .- B))/length(A)
+    l = length(A)
+    cost = - sum(A.*log.(B) .+ (1 .- A).*log.(1 .- B))/l
     cost
 end
 
@@ -82,16 +83,15 @@ end
 """
 @inline function back_prop(A::Array,
     B::Array,
-    para::Array,
-    cache::Array,
+    para::Dict,
+    cache::Dict,
     layer_dims::Vector,
     aktiv::Tuple)::Dict{String, Array{Float64}}
 
     n_layers = length(layer_dims)
     @assert length(A) == length(B) "Not the same size."
-    m = size(A)[2]
-
-    dA = (-A/B .+ (1 .- A))./(1 .- B)
+    l = size(A)[2]
+    dA = -A./B .+ (1 .- A)./(1 .- B)
     if all(isnan.(dA))
         println("¡dA es NaN!")
         dA = rand(Float64)
@@ -100,9 +100,9 @@ end
     grads = Dict{String, Array{Float64}}()
     @inbounds for i in n_layers - 1:-1:1
         dy = dA.*aktiv[i].(cache[string("y", i)])
-        grads[string("dw", i)] = 1/m.*(dy*transpose(cache[string("A", l-1)]))
-        grads[string("db", i)] = 1/m.*sum(dy, dims = 2)
-        dA = transpose(para[string("W", l)])*dy
+        grads[string("dw", i)] = 1/l.*(dy*transpose(cache[string("A", i - 1)]))
+        grads[string("db", i)] = 1/l.*sum(dy, dims = 2)
+        dA = transpose(para[string("w", i)])*dy
     end
 
     grads
@@ -182,11 +182,11 @@ end
 
     n_layers = length(layer_dims)
     Y = reshape_Y(Y)
-    @assert ndims(Y) == 2
+    @assert ndims(Y) == 2 "No dimension match."
 
     begin
         if activations === nothing
-            activations = Array{Function}(undef, num_layers-1)
+            activations = Array{Function}(undef, n_layers - 1)
             @inbounds for i = 1:n_layers - 2
                 activations[i] = relu
             end
@@ -208,7 +208,7 @@ end
         end
 
         if init_params
-            parameters = initialize_parameters(layer_dims, Y)
+            parameters = init_para(layer_dims)
         end
     end
 
@@ -220,14 +220,14 @@ end
     end
 
     begin
-        for iteration = 1:num_iterations
-            @timeit to "forward prop" Ŷ, caches = forward_prop(X, parameters, activations)
-            @timeit to "backprop" grads = backward_prop(Y, Ŷ, parameters, caches, layer_dims, activations_back)
-            @timeit to "update params" parameters = update_parameters(parameters, grads, layer_dims, learning_rate)
+        for iteration = 1:n_it
+            B, cache = fwd_prop(X, parameters, activations)
+            grads = back_prop(Y, B, parameters, cache, layer_dims, activations_back)
+            parameters = up_para(parameters, grads, layer_dims, learn_rate)
 
-            @timeit to "print stats" begin
+            begin
                 if iteration % checkpoint_steps == 0
-                    cost = cost_binary(Y, Ŷ)
+                    cost = cost_bin(Y, Ŷ)
                     println("Cost at iteration $iteration is $cost")
                     if print_stats
                         for i in eachindex(parameters)
@@ -256,9 +256,9 @@ end
     - `predicts`: predictions from the NN
     - `accuracy`: accuracy of predictions
 """
-function predict(X, Y, para::Array, activations::Tuple)
+@inline function predict(X, Y, para::Array, activations::Tuple)
     m = size(X)[2]
-    n = length(para)
+    l = length(para)
     predicts = zeros((1, m))
 
     # Copy Y to CPU
