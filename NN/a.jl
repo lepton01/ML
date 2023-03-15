@@ -8,12 +8,18 @@ using MLJBase
 """
 
 
-function ReLU(A)
-    a = max.(0, A)
-    (A, a)
+sigmoid(x::Float64)::Float64 = 1/(1 + exp(-x))
+
+function sigmoid_back(x::Float64)::Float64
+    s = sigmoid(x)
+    s*(1 - s)
 end
+
+ReLU(x::Float64)::Float64 = x > 0 ? x : 0
+
+ReLU_back(x::Float64)::Float64 = x > 0 ? 1 : 0
 """
-    ReLU activation function.
+    Activation functions.
 """
 
 
@@ -61,7 +67,7 @@ end
 function cost_bin(A::Array{Float64},
     B::Array{Float64})::Float64
 
-    @assert length(A) == length(B)
+    @assert length(A) == length(B) "Not the same size."
     cost = - sum(A.*log.(B) .+ (1 .- A).*log.(1 .- B))/length(A)
     cost
 end
@@ -78,10 +84,10 @@ function back_prop(A::Array,
     aktiv::Tuple)::Dict{String, Array{Float64}}
 
     n_layers = length(layer_dims)
-    @assert length(A) == length(B)
+    @assert length(A) == length(B) "Not the same size."
     m = size(S)[2]
 
-    dA = (.-A/B .+ (1 .- A))./(1 .- B)
+    dA = (-A/B .+ (1 .- A))./(1 .- B)
     if all(isnan.(dA))
         println("¡dA es NaN!")
         dA = rand(Float64)
@@ -140,7 +146,7 @@ end
 """
 
 
-function neural_network_dense(X, Y,
+function neural_net_dense(X, Y,
     layer_dims::Array{Int},
     n_it::Int,
     learn_rate::Number;
@@ -150,12 +156,11 @@ function neural_network_dense(X, Y,
     resume = false,
     checkpoint_steps=100)
 
-    n_layers = length(layer_dims) # calculate number of layers
+    n_layers = length(layer_dims)
     Y = reshape_Y(Y)
     @assert ndims(Y) == 2
 
     begin
-        # if activations are not given, assume that all hidden layers have relu and output layer has sigmoid
         if activations === nothing
             activations = Array{Function}(undef, num_layers-1)
             for i = 1:n_layers - 2
@@ -168,16 +173,14 @@ function neural_network_dense(X, Y,
     end
 
     begin
-        # Check if training has to resume or start over form beginning
         init_params = false
         if !resume
-            init_params=true
-        elseif (resume && parameters==nothing)
+            init_params = true
+        elseif resume && parameters === nothing
             println("Cannot resume without parameters, pass parameters=parameters to resume training. Reinitializing parameters")
-            init_params=true
+            init_params = true
         end
 
-        # initialize params if it has to
         if init_params
             parameters = initialize_parameters(layer_dims, Y)
         end
@@ -190,7 +193,6 @@ function neural_network_dense(X, Y,
         end
     end
 
-    # pass through the whole dataset num_iterations times
     begin
         for iteration = 1:num_iterations
             @timeit to "forward prop" Ŷ, caches = forward_prop(X, parameters, activations)
@@ -198,7 +200,6 @@ function neural_network_dense(X, Y,
             @timeit to "update params" parameters = update_parameters(parameters, grads, layer_dims, learning_rate)
 
             @timeit to "print stats" begin
-                # print stats every few steps
                 if iteration % checkpoint_steps == 0
                     cost = cost_binary(Y, Ŷ)
                     println("Cost at iteration $iteration is $cost")
@@ -236,7 +237,7 @@ end
 
 
 function predict(X, Y, para::Array, activations::Tuple)
-    m = size(X)[2]w
+    m = size(X)[2]
     n = length(para)
     predicts = zeros((1, m))
 
@@ -246,7 +247,7 @@ function predict(X, Y, para::Array, activations::Tuple)
         Y = reshape_Y(Y)
     end
 
-    probs, cache = forward_prop(X, para, activations)
+    probs, cache = fwd_prop(X, para, activations)
     begin
         probs = Array(probs)
         for i = 1:m
