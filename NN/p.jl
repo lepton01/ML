@@ -1,7 +1,7 @@
 #25/02/2023
 
 using Plots
-using LinearAlgebra, Statistics, Random, Flux, MLDatasets, BSON
+using LinearAlgebra, Statistics, Flux, Random, MLDatasets, BSON
 using Flux: crossentropy, onecold, onehotbatch, train!
 
 Random.seed!(1)
@@ -68,7 +68,14 @@ model7 = Chain(
     softmax
 )
 
-function main(model, epoc)
+"""
+    main(model, epoch)
+
+executes training and testing of the network and its parameters.
+model can be selected and it specifies the structure of the network, number of layers and number of neurons in each layer.
+epoc is an integer representing the number of iterations to be made.
+"""
+function main(model, epoc::Int)
     loss(x, y) = crossentropy(model(x), y)
 
     ps = Flux.params(model)
