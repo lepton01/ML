@@ -22,8 +22,8 @@ end
     Sigmoid activation function
 """
 function sigmoid(Z)
-    A = 1 ./ (1 .+ exp.(.-Z))
-    return (A = A, Z = Z)
+    A = 1 ./(1 .+ exp.(.-Z))
+    A, Z
 end
 
 
@@ -32,8 +32,20 @@ end
 """
 function relu(Z)
     A = max.(0, Z)
-    return (A = A, Z = Z)
+    A, Z
 end
+
+sigmoid(x::Float64)::Float64 = 1/(1 + exp(-x))
+
+function sigmoid_back(x::Float64)::Float64
+    s = sigmoid(x)
+    s*(1 - s)
+end
+
+ReLU(x::Float64)::Float64 = x > 0 ? x : 0
+
+ReLU_back(x::Float64)::Float64 = x > 0 ? 1 : 0
+
 
 """
     Make a linear forward calculation

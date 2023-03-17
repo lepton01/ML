@@ -393,9 +393,9 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
-git-tree-sha1 = "d3ba08ab64bdfd27234d3f61956c966266757fe6"
+git-tree-sha1 = "9dec0199898d4d5c1d1b257cbf2cc498afe03a2a"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.13.7"
+version = "0.13.8"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -623,9 +623,9 @@ uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
 version = "0.1.8"
 
 [[deps.InvertedIndices]]
-git-tree-sha1 = "82aec7a3dd64f4d9584659dc0b62ef7db2ef3e19"
+git-tree-sha1 = "0dc7b50b8d436461be01300fd8cd45aa0274b038"
 uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
-version = "1.2.0"
+version = "1.3.0"
 
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "630b497eafcc20001bba38a4651b327dcfc491d2"
@@ -898,9 +898,9 @@ version = "0.3.2"
 
 [[deps.MicroCollections]]
 deps = ["BangBang", "InitialValues", "Setfield"]
-git-tree-sha1 = "4d5917a26ca33c66c8e5ca3247bd163624d35493"
+git-tree-sha1 = "629afd7d10dbc6935ec59b32daeb33bc4460a42e"
 uuid = "128add7d-3638-4c79-886c-908ea0c25c34"
-version = "0.1.3"
+version = "0.1.4"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -1106,9 +1106,9 @@ version = "0.2.0"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "Formatting", "LaTeXStrings", "Markdown", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "96f6db03ab535bdb901300f88335257b0018689d"
+git-tree-sha1 = "548793c7859e28ef026dba514752275ee871169f"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "2.2.2"
+version = "2.2.3"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -1385,9 +1385,9 @@ version = "1.0.1"
 
 [[deps.Tables]]
 deps = ["DataAPI", "DataValueInterfaces", "IteratorInterfaceExtensions", "LinearAlgebra", "OrderedCollections", "TableTraits", "Test"]
-git-tree-sha1 = "c79322d36826aa2f4fd8ecfa96ddb47b174ac78d"
+git-tree-sha1 = "1544b926975372da01227b382066ab70e574a3ec"
 uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
@@ -1641,9 +1641,9 @@ version = "1.5.4+0"
 
 [[deps.Zygote]]
 deps = ["AbstractFFTs", "ChainRules", "ChainRulesCore", "DiffRules", "Distributed", "FillArrays", "ForwardDiff", "GPUArrays", "GPUArraysCore", "IRTools", "InteractiveUtils", "LinearAlgebra", "LogExpFunctions", "MacroTools", "NaNMath", "Random", "Requires", "SnoopPrecompile", "SparseArrays", "SpecialFunctions", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "5eb05dfdc66e6e7eeb5f390b3a3e7eb6e10c6b62"
+git-tree-sha1 = "7903a4db8019d6549fc4246d22cadef8574581fe"
 uuid = "e88e6eb3-aa80-5325-afca-941959d7151f"
-version = "0.6.56"
+version = "0.6.58"
 
 [[deps.ZygoteRules]]
 deps = ["MacroTools"]
