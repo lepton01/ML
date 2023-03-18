@@ -6,32 +6,32 @@ using Statistics, Random, LinearAlgebra, MLJBase, MLDatasets
 #include("datagen.jl")
 
 
-X = hcat(real, fake)
+X = Float32.(hcat(real, fake))
 Y = vcat(ones(train_size), zeros(train_size))
 
 """
     Activation functions.
 """
-sigmoid(x::Float64)::Float64 = 1/(1 + exp(-x))
+sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
 
-function sigmoid_back(x::Float64)::Float64
+function sigmoid_back(x::Float32)::Float32
     s = sigmoid(x)
     s*(1 - s)
 end
 
-ReLU(x::Float64)::Float64 = x > 0 ? x : 0
+ReLU(x::Float32)::Float32 = x > 0 ? x : 0
 
-ReLU_back(x::Float64)::Float64 = x > 0 ? 1 : 0
+ReLU_back(x::Float32)::Float32 = x > 0 ? 1 : 0
 
 
 """
     Initialization of weights (wi) and biases (bi). Each layer is represented by a dictionary with keys being the names for the w and b of each neuron i.
 """
-function init_para(layer_dims::Vector)::Dict{String, Array{Float64}}
-    A = Dict{String, Array{Float64}}()
+function init_para(layer_dims::Vector)::Dict{String, Array{Float32}}
+    A = Dict{String, Array{Float32}}()
     for i in 2:length(layer_dims)
-        A[string("w", i - 1)] = rand(Float64, (layer_dims[i], layer_dims[i - 1]))/sqrt(i - 1)
-        A[string("b", i - 1)] = zeros(Float64, layer_dims[i])
+        A[string("w", i - 1)] = rand(Float32, (layer_dims[i], layer_dims[i - 1]))/sqrt(i - 1)
+        A[string("b", i - 1)] = zeros(Float32, layer_dims[i])
     end
 
     A
@@ -41,12 +41,12 @@ end
 """
     Forward propagation.
 """
-function fwd_prop(X::Array{Float64},
-    para::Dict{String, Array{Float64}},
+function fwd_prop(X::Array{Float32},
+    para::Dict{String, Array{Float32}},
     aktiv::Tuple)
 
     n_layers::Int = length(para) ÷ 2
-    cache = Dict{String, Array{Float64}}()
+    cache = Dict{String, Array{Float32}}()
     cache[string("A", 0)] = X
 
     Ai = nothing
@@ -54,7 +54,7 @@ function fwd_prop(X::Array{Float64},
         begin
             wi = para[string("w", i)]
             Ai_ant = cache[string("A", i - 1)]
-            yi = zeros(Float64, (size(wi)[1], size(Ai_ant)[2]))
+            yi = zeros(Float32, (size(wi)[1], size(Ai_ant)[2]))
             mul!(yi, wi, Ai_ant)
             yi .+= para[string("b", i)]
         end
@@ -71,8 +71,8 @@ end
 """
     Cost computation.
 """
-function cost_bin(Y::Array{Float64},
-    T::Array{Float64})::Float64
+function cost_bin(Y::Array{Float32},
+    T::Array{Float32})::Float32
 
     @assert length(Y) == length(T) "Not the same size."
     l = length(Y)
@@ -88,7 +88,7 @@ function back_prop(A::Array,
     para::Dict,
     cache::Dict,
     layer_dims::Vector,
-    aktiv::Tuple)::Dict{String, Array{Float64}}
+    aktiv::Tuple)::Dict{String, Array{Float32}}
 
     n_layers = length(layer_dims)
     @assert length(A) == length(B) "Not the same size."
@@ -96,10 +96,10 @@ function back_prop(A::Array,
     dA = -A./B .+ (1 .- A)./(1 .- B)
     if all(isnan.(dA))
         println("¡dA es NaN!")
-        dA = rand(Float64)
+        dA = rand(Float32)
     end
 
-    grads = Dict{String, Array{Float64}}()
+    grads = Dict{String, Array{Float32}}()
     for i in n_layers - 1:-1:1
         dy = dA.*aktiv[i].(cache[string("y", i)])
         grads[string("dw", i)] = 1/l.*(dy*transpose(cache[string("A", i - 1)]))
@@ -114,8 +114,8 @@ end
 """
     Update parameters.
 """
-function up_para(para::Dict{String, Array{Float64}},
-    grads::Dict{String, Array{Float64}},
+function up_para(para::Dict{String, Array{Float32}},
+    grads::Dict{String, Array{Float32}},
     layer_dims::Array{Int},
     learn_rate::Number)
 
@@ -146,7 +146,7 @@ end
     ...
 """
 function reshape_M!(M::Array)
-    M = convert(Array{Float64, ndims(M)}, M)
+    M = convert(Array{Float32, ndims(M)}, M)
     M = reshape(M, 1, :)
 end
 
