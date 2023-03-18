@@ -76,7 +76,7 @@ function cost_bin(Y::Array{Float32},
 
     @assert length(Y) == length(T) "Not the same size."
     l = length(Y)
-    cost = - sum(Y.*log.(T) .+ (1 .- Y).*log.(1 .- T))/l
+    cost = -sum(Y.*log.(T) .+ (1 .- Y).*log.(1 .- T))/l
 end
 
 
@@ -230,7 +230,7 @@ function neural_net_dense(X, Y,
             begin
                 if iteration % checkpoint_steps == 0
                     cost = cost_bin(Y, T)
-                    println("Cost at iteration $iteration is $cost")
+                    println("Cost at iteration $(iteration) is $(cost)")
                     if print_stats
                         for i in eachindex(parameters)
                             println("\tMean of parameter ", i, " is ", mean(parameters[i]))
