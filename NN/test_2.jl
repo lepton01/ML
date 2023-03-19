@@ -8,8 +8,8 @@ using Plots
 #X = Float32.(hcat(real, fake))
 #Y = vcat(ones(train_size), zeros(train_size))
 
-test1_data = [1 -1 0; 2 2 -1]
-y_ = [1 0 0]
+test1_data = [1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
+y_ = [0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
 
 """
     Network(layer_dims, n_layers::Int)
@@ -76,15 +76,16 @@ function back_prop(T, Y, para)
     error = Y - T
     para[n].W = para[n].W + error*para[n - 1].cache'
     para[n].b = para[n].b + error
+    para
 end
+
 
 function training()
-    nothing
-end
-
-function run(X, Y, dims::Vector, n_it::Int = 100)
     Net = Network(dims)
     parameters = init_para(Net)
     parameters = fwd_prop(X, parameters)
+end
 
+function testing(X, Y, dims::Vector, n_it::Int = 100)
+    nothing
 end
