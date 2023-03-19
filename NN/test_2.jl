@@ -41,6 +41,7 @@ end
 Sigmoid (`σ`) activation function.\\Returns a Float32 number.
 """
 sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
+
 """
     sigmoid_back(x::Float32)
 
@@ -51,6 +52,7 @@ function sigmoid_back(x::Float32)::Float32
     s = sigmoid(x)
     s*(1 - s)
 end
+
 """
     ReLU(x::Float32)
 
@@ -58,6 +60,7 @@ Rectified linear unit activation function. max(0, x).\\
 Returns a `Float32` number.
 """
 ReLU(x::Float32)::Float32 = x > 0 ? x : 0
+
 """
     ReLU_back(x::Float32)
 
@@ -66,9 +69,14 @@ Returns a `Float32` number.
 """
 ReLU_back(x::Float32)::Float32 = x > 0 ? 1 : 0
 
+"""
+    init_para(net)
+
+Creates a vector storing type ``Layer`` with the parameters (weights, biases, and values) for all neurons in every layer.
+"""
 function init_para(net::Network)
     para = Vector{Layer}
-    for i ∈ 2:net.n_layers
+    for i ∈ 1:net.n_layers
         para[i] = Layer(rand(Float32, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]))
     end
 
@@ -89,6 +97,7 @@ end
 function cost(T::Vector, Y::Vector)::Float32
     @assert length(Y) == length(T) "Not the same size."
     l = length(Y)
+
     cost = -sum(Y.*log.(T) .+ (1 .- Y).*log.(1 .- T))/l
 end
 
@@ -96,8 +105,9 @@ function back_prop1(T, Y, para)
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
     error = Y - T
-    para[n].W = para[n].W + error*para[n - 1].cache'
-    para[n].b = para[n].b + error
+    para[end].W = para[end].W + error*para[end - 1].cache'
+    para[end].b = para[end].b + error
+
     para
 end
 
@@ -112,6 +122,7 @@ function training(X, Y, dims::Vector, n_it::Int = 100)
     end
     for i ∈ 1:n_it
         parameters = fwd_prop(X[:, i], parameters)
+        parameters = back_prop1(parameters[end].cache, Y[:, i], parameters)
     end
 end
 
@@ -119,4 +130,4 @@ function testing()
     nothing
 end
 
-paras,  = training(test1_data, y_, )
+#paras,  = training(test1_data, y_, )
