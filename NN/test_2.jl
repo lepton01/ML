@@ -13,6 +13,7 @@ y_ = [0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
 
 """
     Network(layer_dims, n_layers::Int)
+
 layer_dims is input as a vector of integers defining how many neurons in each layer.
 The first and last should match the size of intup and output to train and test.
 """
@@ -23,6 +24,7 @@ end
 
 """
     Layer(W, b, cache)
+
 W is the weights matrix, b is the biases vector, and Z is the vector of values computed.
 """
 mutable struct Layer
@@ -32,17 +34,33 @@ mutable struct Layer
     cache::Array
 end
 
-sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
+"""
+    sigmoid(x::Float32)
 
+Sigmoid (σ) activation function. Returns a Float32 number.
+"""
+sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
+"""
+    sigmoid_back(x::Float32)
+
+'Inverse' sigmoid (σ) activation function. Returns a Float32 number.
+"""
 function sigmoid_back(x::Float32)::Float32
     s = sigmoid(x)
     s*(1 - s)
 end
+"""
+    ReLU(x::Float32)
 
+Rectified linear unit activation function. max(0, x). Returns a Float32 number.
+"""
 ReLU(x::Float32)::Float32 = x > 0 ? x : 0
+"""
+    ReLU_back(x::Float32)
 
+'Inverse' rectified linear unit activation function. Returns a Float32 number.
+"""
 ReLU_back(x::Float32)::Float32 = x > 0 ? 1 : 0
-
 
 function init_para(net::Network)
     para = Vector{Layer}
@@ -79,13 +97,14 @@ function back_prop(T, Y, para)
     para
 end
 
-
-function training()
+function training(X, Y, dims::Vector, n_it::Int = 100)
     Net = Network(dims)
     parameters = init_para(Net)
+
+
     parameters = fwd_prop(X, parameters)
 end
 
-function testing(X, Y, dims::Vector, n_it::Int = 100)
+function testing()
     nothing
 end
