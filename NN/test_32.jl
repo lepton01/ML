@@ -10,17 +10,37 @@ X = Float32.(hcat(real, fake))
 Y = vcat(ones(train_size), zeros(train_size))
 
 """
-    Activation functions.
+    sigmoid(x::Float32)
+
+Sigmoid (`σ`) activation function.\\Returns a Float32 number.
 """
 sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
 
+"""
+    sigmoid_back(x::Float32)
+
+'Inverse' sigmoid (`σ`) activation function.\\
+Returns a `Float32` number.
+"""
 function sigmoid_back(x::Float32)::Float32
     s = sigmoid(x)
     s*(1 - s)
 end
 
+"""
+    ReLU(x::Float32)
+
+Rectified linear unit activation function. max(0, x).\\
+Returns a `Float32` number.
+"""
 ReLU(x::Float32)::Float32 = x > 0 ? x : 0
 
+"""
+    ReLU_back(x::Float32)
+
+'Inverse' rectified linear unit activation function.\\
+Returns a `Float32` number.
+"""
 ReLU_back(x::Float32)::Float32 = x > 0 ? 1 : 0
 
 

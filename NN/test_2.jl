@@ -121,9 +121,13 @@ function training(X, Y, dims::Vector, n_it::Int = 100)
         reshape!(Y, 2, :)
     end
     for i ∈ 1:n_it
-        parameters = fwd_prop(X[:, i], parameters)
-        parameters = back_prop1(parameters[end].cache, Y[:, i], parameters)
+        for j ∈ 1:length(X[1, :])
+            parameters = fwd_prop(X[:, j], parameters)
+            parameters = back_prop1(parameters[end].cache, Y[:, j], parameters)
+        end
     end
+
+    parameters
 end
 
 function testing()
