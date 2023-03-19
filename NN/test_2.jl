@@ -12,10 +12,10 @@ test1_data = [1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
 y_ = [0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
 
 """
-    Network(layer_dims, n_layers::Int)
+    Network(layer_dims::Vector, n_layers::Int)
 
-layer_dims is input as a vector of integers defining how many neurons in each layer.
-The first and last should match the size of intup and output to train and test.
+``layer_dims`` is input as a vector of integers defining number of neurons in each layer. The first and last should match the size of intup and output.\\
+``n_layers`` is computed from the first imput.
 """
 mutable struct Network
     layer_dims::Vector{Int}
@@ -23,9 +23,10 @@ mutable struct Network
 end
 
 """
-    Layer(W, b, cache)
+    Layer(W, b, Z, cache)
 
-W is the weights matrix, b is the biases vector, and Z is the vector of values computed.
+`W` is the weights matrix, `b` is the biases vector, and `Z` is the vector of values to enter the activation function,\\
+and `cache` is the vector of values to input to the next layer.
 """
 mutable struct Layer
     W::Array{Float32}
@@ -37,13 +38,14 @@ end
 """
     sigmoid(x::Float32)
 
-Sigmoid (σ) activation function. Returns a Float32 number.
+Sigmoid (`σ`) activation function.\\Returns a Float32 number.
 """
 sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
 """
     sigmoid_back(x::Float32)
 
-'Inverse' sigmoid (σ) activation function. Returns a Float32 number.
+'Inverse' sigmoid (`σ`) activation function.\\
+Returns a `Float32` number.
 """
 function sigmoid_back(x::Float32)::Float32
     s = sigmoid(x)
@@ -52,19 +54,21 @@ end
 """
     ReLU(x::Float32)
 
-Rectified linear unit activation function. max(0, x). Returns a Float32 number.
+Rectified linear unit activation function. max(0, x).\\
+Returns a `Float32` number.
 """
 ReLU(x::Float32)::Float32 = x > 0 ? x : 0
 """
     ReLU_back(x::Float32)
 
-'Inverse' rectified linear unit activation function. Returns a Float32 number.
+'Inverse' rectified linear unit activation function.\\
+Returns a `Float32` number.
 """
 ReLU_back(x::Float32)::Float32 = x > 0 ? 1 : 0
 
 function init_para(net::Network)
     para = Vector{Layer}
-    for i in 2:net.n_layers
+    for i ∈ 2:net.n_layers
         para[i] = Layer(rand(Float32, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]))
     end
 
@@ -74,7 +78,7 @@ end
 function fwd_prop(input::Array, para)
     n = length(para)
     para[1].cache = input
-    for i in 2:n
+    for i ∈ 2:n
         para[i].Z = muladd(para[i].W, para[i - 1].cache, para[i].b)
         i < n ? para[i].cache = ReLU.(para[i].Z) : para[i].cache = sigmoid.(para[i].Z)
     end
@@ -88,7 +92,7 @@ function cost(T::Vector, Y::Vector)::Float32
     cost = -sum(Y.*log.(T) .+ (1 .- Y).*log.(1 .- T))/l
 end
 
-function back_prop(T, Y, para)
+function back_prop1(T, Y, para)
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
     error = Y - T
@@ -100,11 +104,19 @@ end
 function training(X, Y, dims::Vector, n_it::Int = 100)
     Net = Network(dims)
     parameters = init_para(Net)
-
-
-    parameters = fwd_prop(X, parameters)
+    if size(X, 1) != 2
+        reshape!(X, 2, :)
+    end
+    if size(Y, 1) != 2
+        reshape!(Y, 2, :)
+    end
+    for i ∈ 1:n_it
+        parameters = fwd_prop(X[:, i], parameters)
+    end
 end
 
 function testing()
     nothing
 end
+
+paras,  = training(test1_data, y_, )
