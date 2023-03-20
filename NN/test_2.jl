@@ -14,12 +14,10 @@ y_ = [0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
 """
     Network(layer_dims::Vector, n_layers::Int)
 
-``layer_dims`` is input as a vector of integers defining number of neurons in each layer. The first and last should match the size of intup and output.\\
-``n_layers`` is computed from the first imput.
+``layer_dims`` is input as a vector of integers defining number of neurons in each layer. The first and last should match the size of intup and output.
 """
 mutable struct Network
     layer_dims::Vector{Int}
-    n_layers::Int = length(layer_dims)
 end
 
 """
@@ -75,9 +73,9 @@ ReLU_back(x::Float32)::Float32 = x > 0 ? 1 : 0
 Creates a vector storing type ``Layer`` with the parameters (weights, biases, and values) for all neurons in every layer.
 """
 function init_para(net::Network)
-    para = Vector{Layer}
-    for i ∈ 1:net.n_layers
-        para[i] = Layer(rand(Float32, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]))
+    para = Layer[]
+    for i ∈ 1:length(net.layer_dims)
+        i == 1 ? push!(para, Layer(zeros(Float32, (1, 1)), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]))) : push!(para, Layer(rand(Float32, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i])))
     end
 
     para
