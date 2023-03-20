@@ -76,7 +76,7 @@ Creates a vector storing type ``Layer`` with the parameters (weights, biases, an
 function init_para(net::Network)::Array
     para = Layer[]
     for i ∈ 1:length(net.layer_dims)
-        i == 1 ? push!(para, Layer(zeros(Float32, (1, 1)), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]))) : push!(para, Layer(rand(Float32, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i])))
+        i == 1 ? push!(para, Layer(zeros(Float32, (1, 1)), zeros(Float32, net.layer_dims[i]), zeros(Float32, net.layer_dims[i]), zeros(Float32, net.layer_dims[i]))) : push!(para, Layer(rand(Float32, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(Float32, net.layer_dims[i]), zeros(Float32, net.layer_dims[i]), zeros(Float32, net.layer_dims[i])))
     end
 
     para
@@ -118,6 +118,7 @@ Modifies ``para`` input. Compares between output and expected output.
 function back_prop!(T, Y, para)
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
+    #=
     error = Y - T
     para[end].W = para[end].W + error*para[end - 1].cache'
     para[end].b = para[end].b + error
@@ -125,16 +126,20 @@ function back_prop!(T, Y, para)
     for i ∈ lastindex[para] - 1:-1:2
         nothing
     end
+    =#
+    sf = -2*(Y - T)
 
-    para
+
+    para, grad
 end
+
 
 """
     training(X, Y, dims, n_it)
 
 Calls creation and propagation functions, modifies the parameters for layers, and returns the final parameters array containing the info for all layers and their neurons.
 """
-function training(X, Y, dims::Vector, n_it::Int = 100)
+function training(X, Y, dims::Vector, l_rate::Float32 = 0.01, n_it::Int = 100)
     Net = Network(dims)
     parameters = init_para(Net)
     if size(X, 1) != 2
@@ -163,4 +168,4 @@ function testing()
     nothing
 end
 
-paras  = training(x_, y_, [2, 2, 2], 500)
+paras, grads  = training(x_, y_, [2, 2, 2])
