@@ -8,7 +8,7 @@ using Plots
 #X = Float32.(hcat(real, fake))
 #Y = vcat(ones(train_size), zeros(train_size))
 
-test1_data = [1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
+x_ = [1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
 y_ = [0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
 
 """
@@ -36,7 +36,8 @@ end
 """
     sigmoid(x::Float32)
 
-Sigmoid (`σ`) activation function.\\Returns a Float32 number.
+Sigmoid (`σ`) activation function.\\
+Returns a ``Float32 number``.
 """
 sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
 
@@ -54,7 +55,7 @@ end
 """
     ReLU(x::Float32)
 
-Rectified linear unit activation function. max(0, x).\\
+Rectified linear unit activation function. Same effect as ``max(0, x)``.\\
 Returns a `Float32` number.
 """
 ReLU(x::Float32)::Float32 = x > 0 ? x : 0
@@ -72,7 +73,7 @@ ReLU_back(x::Float32)::Float32 = x > 0 ? 1 : 0
 
 Creates a vector storing type ``Layer`` with the parameters (weights, biases, and values) for all neurons in every layer.
 """
-function init_para(net::Network)
+function init_para(net::Network)::Array
     para = Layer[]
     for i ∈ 1:length(net.layer_dims)
         i == 1 ? push!(para, Layer(zeros(Float32, (1, 1)), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]))) : push!(para, Layer(rand(Float32, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(net.layer_dims[i]), zeros(net.layer_dims[i]), zeros(net.layer_dims[i])))
@@ -82,10 +83,11 @@ function init_para(net::Network)
 end
 
 """
-    fwd_prop(input::Array, para) -> 
-``input`` is an array  ``para`` is a ``Vector{Layer}`` containing all the parameters
+    fwd_prop!(input::Array, para)
+Modifies the ``para`` argument. ``input`` is an array of the initial inputs to the network.\\
+``para`` is a ``Vector{Layer}`` containing all the parameters.
 """
-function fwd_prop!(input::Array, para)
+function fwd_prop!(input::Array, para::Array)::Array
     n = length(para)
     para[1].cache = input
     for i ∈ 2:n
@@ -96,6 +98,11 @@ function fwd_prop!(input::Array, para)
     para
 end
 
+"""
+    cost(T, Y)
+
+a
+"""
 function cost(T::Vector, Y::Vector)::Float32
     @assert length(Y) == length(T) "Not the same size."
     l = length(Y)
@@ -103,16 +110,30 @@ function cost(T::Vector, Y::Vector)::Float32
     cost = -sum(Y.*log.(T) .+ (1 .- Y).*log.(1 .- T))/l
 end
 
+"""
+    back_prop!(T, Y, para)
+
+Modifies ``para`` input. Compares between output and expected output.
+"""
 function back_prop!(T, Y, para)
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
     error = Y - T
     para[end].W = para[end].W + error*para[end - 1].cache'
     para[end].b = para[end].b + error
+    #g = 
+    for i ∈ lastindex[para] - 1:-1:2
+        nothing
+    end
 
     para
 end
 
+"""
+    training(X, Y, dims, n_it)
+
+Calls creation and propagation functions, modifies the parameters for layers, and returns the final parameters array containing the info for all layers and their neurons.
+"""
 function training(X, Y, dims::Vector, n_it::Int = 100)
     Net = Network(dims)
     parameters = init_para(Net)
@@ -133,8 +154,13 @@ function training(X, Y, dims::Vector, n_it::Int = 100)
     parameters
 end
 
+"""
+    testing()
+
+a
+"""
 function testing()
     nothing
 end
 
-paras  = training(test1_data, y_, [2, 2, 2])
+paras  = training(x_, y_, [2, 2, 2], 500)
