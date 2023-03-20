@@ -81,7 +81,11 @@ function init_para(net::Network)
     para
 end
 
-function fwd_prop(input::Array, para)
+"""
+    fwd_prop(input::Array, para) -> 
+``input`` is an array  ``para`` is a ``Vector{Layer}`` containing all the parameters
+"""
+function fwd_prop!(input::Array, para)
     n = length(para)
     para[1].cache = input
     for i ∈ 2:n
@@ -99,7 +103,7 @@ function cost(T::Vector, Y::Vector)::Float32
     cost = -sum(Y.*log.(T) .+ (1 .- Y).*log.(1 .- T))/l
 end
 
-function back_prop1(T, Y, para)
+function back_prop!(T, Y, para)
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
     error = Y - T
@@ -120,9 +124,10 @@ function training(X, Y, dims::Vector, n_it::Int = 100)
     end
     for i ∈ 1:n_it
         for j ∈ 1:length(X[1, :])
-            parameters = fwd_prop(X[:, j], parameters)
-            parameters = back_prop1(parameters[end].cache, Y[:, j], parameters)
+            parameters = fwd_prop!(X[:, j], parameters)
+            parameters = back_prop!(parameters[end].cache, Y[:, j], parameters)
         end
+        i != n_it ? nothing : show(parameters[end].cache)
     end
 
     parameters
@@ -132,4 +137,4 @@ function testing()
     nothing
 end
 
-#paras,  = training(test1_data, y_, )
+paras  = training(test1_data, y_, [2, 2, 2])
