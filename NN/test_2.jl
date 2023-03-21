@@ -42,9 +42,9 @@ Returns a ``Float32 number``.
 sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
 
 """
-    sigmoid_back(x::Float32)
+    sigmoid_der(x::Float32)
 
-'Inverse' sigmoid (`σ`) activation function.\\
+'Derivative' sigmoid (`σ`) activation function.\\
 Returns a `Float32` number.
 """
 function sigmoid_der(x::Float32)::Float32
@@ -61,9 +61,9 @@ Returns a `Float32` number.
 ReLU(x::Float32)::Float32 = x > 0 ? x : 0
 
 """
-    ReLU_back(x::Float32)
+    ReLU_der(x::Float32)
 
-'Inverse' rectified linear unit activation function.\\
+'Derivative' rectified linear unit activation function.\\
 Returns a `Float32` number.
 """
 ReLU_der(x::Float32)::Float32 = x > 0 ? 1 : 0
@@ -115,7 +115,7 @@ end
 
 Modifies ``para`` input. Compares between output and expected output.
 """
-function back_prop!(T, Y, para)
+function back_prop!(T, Y, para, l_rate)
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
     #=
@@ -128,12 +128,21 @@ function back_prop!(T, Y, para)
     end
     =#
     error = (Y - T)
-    errorsqrd = error^2
-    g1 = -2*error
-    g2 = sigmoid_der(T)
-    g3w1
+    errorsqrd = (error.^2)./length(Y)
+    g1 = -2*errorsqrd
+    #g2 = sigmoid_der(T)
+    for i ∈ 1:lastindex(para) - 1
+        i != 1 ? g2 = ReLU_der.(T) : g2 = sigmoid_der.(T)
+        if i == lastindex(para) - 1
+            nothing
+        else
+            para[end - i + 1].W = para[end - i + 1].W - l_rate*g2.*para[end - i].cache
+            para[end - i + 1].b = para[end - i + 1].b - l_rate*g2
+        end
 
-    para, grad
+    end
+
+    para
 end
 
 
@@ -157,8 +166,8 @@ function training(X, Y, dims::Vector, learn_r::Float32 = Float32(0.01), epochs::
     for i ∈ 1:epochs
         for j ∈ 1:length(X[1, :])
             parameters = fwd_prop!(X[:, j], parameters)
-            c = cost(parameters[end].cache, Y[:, j])
-            parameters = back_prop!(parameters[end].cache, Y[:, j], parameters)
+            #c = cost(parameters[end].cache, Y[:, j])
+            parameters = back_prop!(parameters[end].cache, Y[:, j], parameters, learn_r)
         end
         
         i != epochs ? nothing : show(parameters[end].cache)
@@ -176,4 +185,4 @@ function testing()
     nothing
 end
 
-paras, grads  = training(x_, y_, [2, 2, 2])
+paras  = training(x_, y_, [2, 2, 2])
