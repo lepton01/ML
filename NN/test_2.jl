@@ -47,7 +47,7 @@ sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
 'Inverse' sigmoid (`σ`) activation function.\\
 Returns a `Float32` number.
 """
-function sigmoid_back(x::Float32)::Float32
+function sigmoid_der(x::Float32)::Float32
     s = sigmoid(x)
     s*(1 - s)
 end
@@ -66,7 +66,7 @@ ReLU(x::Float32)::Float32 = x > 0 ? x : 0
 'Inverse' rectified linear unit activation function.\\
 Returns a `Float32` number.
 """
-ReLU_back(x::Float32)::Float32 = x > 0 ? 1 : 0
+ReLU_der(x::Float32)::Float32 = x > 0 ? 1 : 0
 
 """
     init_para(net)
@@ -127,19 +127,25 @@ function back_prop!(T, Y, para)
         nothing
     end
     =#
-    sf = -2*(Y - T)
-
+    error = (Y - T)
+    errorsqrd = error^2
+    g1 = -2*error
+    g2 = sigmoid_der(T)
+    g3w1
 
     para, grad
 end
 
 
 """
-    training(X, Y, dims, n_it)
+    training(X, Y, dims, epochs)
 
-Calls creation and propagation functions, modifies the parameters for layers, and returns the final parameters array containing the info for all layers and their neurons.
+``X`` is the input array, ``Y`` is the expected output, ``dims`` is a vector specifying the number of neurons in each layer,\\
+``learn_r`` is the learning rate of training, can be specified by user, and ``epochs`` is the number of iterations for training, can be specified by user.\\
+Calls creation and propagation functions, modifies the parameters for layers,\\
+and returns the final ``parameters`` array containing the info for all layers and their neurons.
 """
-function training(X, Y, dims::Vector, learn_r::Float32 = Float32(0.01), n_it::Int = 100)
+function training(X, Y, dims::Vector, learn_r::Float32 = Float32(0.01), epochs::Int = 100)
     Net = Network(dims)
     parameters = init_para(Net)
     if size(X, 1) != 2
@@ -148,12 +154,14 @@ function training(X, Y, dims::Vector, learn_r::Float32 = Float32(0.01), n_it::In
     if size(Y, 1) != 2
         reshape!(Y, 2, :)
     end
-    for i ∈ 1:n_it
+    for i ∈ 1:epochs
         for j ∈ 1:length(X[1, :])
             parameters = fwd_prop!(X[:, j], parameters)
+            c = cost(parameters[end].cache, Y[:, j])
             parameters = back_prop!(parameters[end].cache, Y[:, j], parameters)
         end
-        i != n_it ? nothing : show(parameters[end].cache)
+        
+        i != epochs ? nothing : show(parameters[end].cache)
     end
 
     parameters
