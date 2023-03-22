@@ -154,7 +154,7 @@ end
 Calls creation and propagation functions, modifies the parameters for layers,\\
 and returns the final ``parameters`` array containing the info for all layers and their neurons.
 """
-function training(X, Y, dims::Vector, learn_r::Float32 = Float32(0.01), epochs::Int = 100)
+function training(X, Y, dims::Vector, learn_r::Float64 = 0.01, epochs::Int = 100)
     Net = Network(dims)
     parameters = init_para(Net)
     if size(X, 1) != 2
@@ -185,4 +185,4 @@ function testing()
     nothing
 end
 
-paras  = training(x_, y_, [2, 2, 2])
+paras  = training(x_, y_, [2, 10, 2], 0.01, 1000)
