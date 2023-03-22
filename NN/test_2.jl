@@ -30,7 +30,7 @@ mutable struct Layer
     W::Array{Float32}
     b::Vector{Float32}
     Z::Array{Float32}
-    cache::Array
+    cache::Array{Float32}
 end
 
 """
@@ -84,6 +84,7 @@ end
 
 """
     fwd_prop!(input::Array, para)
+
 Modifies the ``para`` argument. ``input`` is an array of the initial inputs to the network.\\
 ``para`` is a ``Vector{Layer}`` containing all the parameters.
 """
