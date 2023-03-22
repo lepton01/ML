@@ -113,7 +113,7 @@ end
 """
     back_prop!(T, Y, para)
 
-Modifies ``para`` input. Compares between output and expected output.
+Modifies ``para`` input. Compares between output and expected output and changes the weights and biases depending on the cost function.
 """
 function back_prop!(T, Y, para, l_rate)
     n = length(para)
@@ -136,7 +136,7 @@ function back_prop!(T, Y, para, l_rate)
         if i == lastindex(para) - 1
             nothing
         else
-            para[end - i + 1].W = para[end - i + 1].W - l_rate*g2.*para[end - i].cache
+            para[end - i + 1].W = para[end - i + 1].W - l_rate*g2*para[end - i].cache'
             para[end - i + 1].b = para[end - i + 1].b - l_rate*g2
         end
 
