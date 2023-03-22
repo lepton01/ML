@@ -186,4 +186,4 @@ function testing()
     nothing
 end
 
-paras  = training(x_, y_, [2, 2, 2], 0.01, 1000)
+paras = training(x_, y_, [2, 2, 2], 0.01, 1000)

@@ -5,7 +5,6 @@ using Statistics, Random, LinearAlgebra, MLJBase, MLDatasets
 
 #include("datagen.jl")
 
-
 X = Float32.(hcat(real, fake))
 Y = vcat(ones(train_size), zeros(train_size))
 
