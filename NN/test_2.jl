@@ -122,15 +122,15 @@ function back_prop!(T, Y, para, l_rate)
     @assert length(Y) == length(T) "Not the same size"
     error = (Y - T)
     errorsqrd = (error.^2)./length(Y)
-    g1 = -2*errorsqrd
+    g1 = -2*error
     #g2 = sigmoid_der(T)
     for i ∈ 1:lastindex(para) - 1
         i != 1 ? g2 = ReLU_der.(T) : g2 = sigmoid_der.(T)
         if i == lastindex(para) - 1
             nothing
         else
-            para[end - i + 1].W -= l_rate*g2*para[end - i].cache'
-            para[end - i + 1].b -= l_rate*g2
+            para[end - i + 1].W -= l_rate*g1*para[end - i].cache'
+            para[end - i + 1].b -= l_rate*g1
         end
 
     end
