@@ -99,7 +99,7 @@ function fwd_prop!(input::Array, para::Array)::Array
 
     para
 end
-
+#=
 """
     cost(T, Y)
 
@@ -111,7 +111,7 @@ function cost(T::Vector, Y::Vector)::Float64
 
     cost = -sum(Y.*log.(T) .+ (1 .- Y).*log.(1 .- T))/l
 end
-
+=#
 """
     back_prop!(T, Y, para)
 
@@ -121,7 +121,7 @@ function back_prop!(T, Y, para, l_rate)
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
     error = (Y - T)
-    errorsqrd = (error.^2)./length(Y)
+    #errorsqrd = (error.^2)./length(Y)
     g1 = -2*error
     #g2 = sigmoid_der(T)
     for i ∈ 1:lastindex(para) - 1
@@ -132,7 +132,6 @@ function back_prop!(T, Y, para, l_rate)
             para[end - i + 1].W -= l_rate*g1*para[end - i].cache'
             para[end - i + 1].b -= l_rate*g1
         end
-
     end
 
     para
@@ -147,9 +146,9 @@ end
 Calls creation and propagation functions, modifies the parameters for layers,\\
 and returns the final ``parameters`` array containing the info for all layers and their neurons.
 """
-function training(X, Y, dims::Vector, epochs::Int = 100)
-    r(t::Int) = exp(-t)
-
+function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 100)
+    #r(t::Int)::Float64 = exp(-t)
+    r(t::Int) = 1^(-t)
     Net = Network(dims)
     parameters = init_para(Net)
     if size(X, 1) != 2
@@ -158,17 +157,21 @@ function training(X, Y, dims::Vector, epochs::Int = 100)
     if size(Y, 1) != 2
         reshape!(Y, 2, :)
     end
+    error = Array{Float64}(undef, (size(X)[1], epochs))
     for i ∈ 1:epochs
         for j ∈ 1:length(X[1, :])
             parameters = fwd_prop!(X[:, j], parameters)
             #c = cost(parameters[end].cache, Y[:, j])
             parameters = back_prop!(parameters[end].cache, Y[:, j], parameters, r(i))
         end
-        
+
+        error[:, i] = (Y[:, end] - parameters[end].cache).^2
+        #β = 0.95
+        #learn_rate = learn_rate*β
         i != epochs ? nothing : show(parameters[end].cache)
     end
-
-    parameters
+    
+    parameters, error
 end
 
 """
@@ -176,8 +179,17 @@ end
 
 a
 """
-function testing()
-    nothing
+function testing(error::Array)
+    p = plot(error[1, :])
+    plot!(error[2, :],
+        xlabel = "iterations",
+        ylabel = "cost"
+    )
+
+    p
 end
 
-paras = training(x_, y_, [2, 2, 2], 10000)
+paras, error = training(x_, y_, [2, 2, 2, 2], 0.10, 100)
+
+p = testing(error)
+savefig(p, "cost_ev.png")
