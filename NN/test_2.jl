@@ -5,7 +5,7 @@ using Plots
 
 #include("datagen.jl")
 
-#X = Float32.(hcat(real, fake))
+#X = Float64.(hcat(real, fake))
 #Y = vcat(ones(train_size), zeros(train_size))
 
 x_ = [1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
@@ -27,46 +27,46 @@ end
 and `cache` is the vector of values to input to the next layer.
 """
 mutable struct Layer
-    W::Array{Float32}
-    b::Vector{Float32}
-    Z::Array{Float32}
-    cache::Array{Float32}
+    W::Array{Float64}
+    b::Vector{Float64}
+    Z::Array{Float64}
+    cache::Array{Float64}
 end
 
 """
-    sigmoid(x::Float32)
+    sigmoid(x::Float64)
 
 Sigmoid (`σ`) activation function.\\
-Returns a ``Float32 number``.
+Returns a ``Float64 number``.
 """
-sigmoid(x::Float32)::Float32 = 1/(1 + exp(-x))
+sigmoid(x::Float64)::Float64 = 1/(1 + exp(-x))
 
 """
-    sigmoid_der(x::Float32)
+    sigmoid_der(x::Float64)
 
 'Derivative' sigmoid (`σ`) activation function.\\
-Returns a `Float32` number.
+Returns a `Float64` number.
 """
-function sigmoid_der(x::Float32)::Float32
+function sigmoid_der(x::Float64)::Float64
     s = sigmoid(x)
     s*(1 - s)
 end
 
 """
-    ReLU(x::Float32)
+    ReLU(x::Float64)
 
 Rectified linear unit activation function. Same effect as ``max(0, x)``.\\
-Returns a `Float32` number.
+Returns a `Float64` number.
 """
-ReLU(x::Float32)::Float32 = x > 0 ? x : 0
+ReLU(x::Float64)::Float64 = x > 0 ? x : 0
 
 """
-    ReLU_der(x::Float32)
+    ReLU_der(x::Float64)
 
 'Derivative' rectified linear unit activation function.\\
-Returns a `Float32` number.
+Returns a `Float64` number.
 """
-ReLU_der(x::Float32)::Float32 = x > 0 ? 1 : 0
+ReLU_der(x::Float64)::Float64 = x > 0 ? 1 : 0
 
 """
     init_para(net)
@@ -76,7 +76,7 @@ Creates a vector storing type ``Layer`` with the parameters (weights, biases, an
 function init_para(net::Network)::Array
     para = Layer[]
     for i ∈ 1:length(net.layer_dims)
-        i == 1 ? push!(para, Layer(zeros(Float32, (1, 1)), zeros(Float32, net.layer_dims[i]), zeros(Float32, net.layer_dims[i]), zeros(Float32, net.layer_dims[i]))) : push!(para, Layer(rand(Float32, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(Float32, net.layer_dims[i]), zeros(Float32, net.layer_dims[i]), zeros(Float32, net.layer_dims[i])))
+        i == 1 ? push!(para, Layer(zeros(Float64, (1, 1)), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]))) : push!(para, Layer(rand(Float64, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i])))
     end
 
     para
@@ -94,6 +94,7 @@ function fwd_prop!(input::Array, para::Array)::Array
     for i ∈ 2:n
         para[i].Z = muladd(para[i].W, para[i - 1].cache, para[i].b)
         i < n ? para[i].cache = ReLU.(para[i].Z) : para[i].cache = sigmoid.(para[i].Z)
+        #para[i].cache = sigmoid.(para[i].Z)
     end
 
     para
@@ -104,7 +105,7 @@ end
 
 a
 """
-function cost(T::Vector, Y::Vector)::Float32
+function cost(T::Vector, Y::Vector)::Float64
     @assert length(Y) == length(T) "Not the same size."
     l = length(Y)
 
@@ -119,15 +120,6 @@ Modifies ``para`` input. Compares between output and expected output and changes
 function back_prop!(T, Y, para, l_rate)
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
-    #=
-    error = Y - T
-    para[end].W = para[end].W + error*para[end - 1].cache'
-    para[end].b = para[end].b + error
-    #g = 
-    for i ∈ lastindex[para] - 1:-1:2
-        nothing
-    end
-    =#
     error = (Y - T)
     errorsqrd = (error.^2)./length(Y)
     g1 = -2*errorsqrd
@@ -137,8 +129,8 @@ function back_prop!(T, Y, para, l_rate)
         if i == lastindex(para) - 1
             nothing
         else
-            para[end - i + 1].W = para[end - i + 1].W - l_rate*g2*para[end - i].cache'
-            para[end - i + 1].b = para[end - i + 1].b - l_rate*g2
+            para[end - i + 1].W -= l_rate*g2*para[end - i].cache'
+            para[end - i + 1].b -= l_rate*g2
         end
 
     end
@@ -155,7 +147,9 @@ end
 Calls creation and propagation functions, modifies the parameters for layers,\\
 and returns the final ``parameters`` array containing the info for all layers and their neurons.
 """
-function training(X, Y, dims::Vector, learn_r::Float64 = 0.01, epochs::Int = 100)
+function training(X, Y, dims::Vector, epochs::Int = 100)
+    r(t::Int) = exp(-t)
+
     Net = Network(dims)
     parameters = init_para(Net)
     if size(X, 1) != 2
@@ -168,7 +162,7 @@ function training(X, Y, dims::Vector, learn_r::Float64 = 0.01, epochs::Int = 100
         for j ∈ 1:length(X[1, :])
             parameters = fwd_prop!(X[:, j], parameters)
             #c = cost(parameters[end].cache, Y[:, j])
-            parameters = back_prop!(parameters[end].cache, Y[:, j], parameters, learn_r)
+            parameters = back_prop!(parameters[end].cache, Y[:, j], parameters, r(i))
         end
         
         i != epochs ? nothing : show(parameters[end].cache)
@@ -186,4 +180,4 @@ function testing()
     nothing
 end
 
-paras = training(x_, y_, [2, 2, 2], 0.01, 1000)
+paras = training(x_, y_, [2, 2, 2], 10000)
