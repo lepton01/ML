@@ -117,7 +117,7 @@ end
 
 Modifies ``para`` input. Compares between output and expected output and changes the weights and biases depending on the cost function.
 """
-function back_prop!(T, Y, para, l_rate)
+function back_prop!(T, Y, para, l_rate)::Array
     n = length(para)
     @assert length(Y) == length(T) "Not the same size"
     error = (Y - T)
@@ -146,7 +146,7 @@ end
 Calls creation and propagation functions, modifies the parameters for layers,\\
 and returns the final ``parameters`` array containing the info for all layers and their neurons.
 """
-function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 100)
+function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 100)::Tuple
     #r(t::Int)::Float64 = exp(-t)
     r(t::Int) = 1^(-t)
     Net = Network(dims)
