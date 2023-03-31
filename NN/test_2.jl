@@ -148,7 +148,7 @@ and returns the final ``parameters`` array containing the info for all layers an
 """
 function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 100)::Tuple
     #r(t::Int)::Float64 = exp(-t)
-    r(t::Int) = 1^(-t)
+    r(t::Int64) = 1^(-t)
     Net = Network(dims)
     parameters = init_para(Net)
     if size(X, 1) != 2
@@ -173,6 +173,7 @@ function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 
     
     parameters, error
 end
+#@code_warntype
 
 """
     testing()
