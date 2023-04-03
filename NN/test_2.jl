@@ -2,6 +2,7 @@
 
 using LinearAlgebra, Statistics, Random
 using Plots
+using ProfileView, Cthulhu
 
 #include("datagen.jl")
 
@@ -16,8 +17,8 @@ y_ = [0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
 
 ``layer_dims`` is input as a vector of integers defining number of neurons in each layer. The first and last should match the size of intup and output.
 """
-mutable struct Network
-    layer_dims::Vector{Int}
+mutable struct Network{T<:AbstractVector{Int}}
+    layer_dims::T
 end
 
 """
@@ -26,11 +27,11 @@ end
 `W` is the weights matrix, `b` is the biases vector, and `Z` is the vector of values to enter the activation function,\\
 and `cache` is the vector of values to input to the next layer.
 """
-mutable struct Layer
-    W::Array{Float64}
-    b::Vector{Float64}
-    Z::Array{Float64}
-    cache::Array{Float64}
+mutable struct Layer{T<:AbstractFloat}
+    W::Array{T}
+    b::Vector{T}
+    Z::Array{T}
+    cache::Array{T}
 end
 
 """
@@ -39,7 +40,7 @@ end
 Sigmoid (`σ`) activation function.\\
 Returns a ``Float64 number``.
 """
-sigmoid(x::Float64)::Float64 = 1/(1 + exp(-x))
+sigmoid(x::Float64)::Float64 = one(x)/(one(x) + exp(-x))
 
 """
     sigmoid_der(x::Float64)
@@ -48,8 +49,8 @@ sigmoid(x::Float64)::Float64 = 1/(1 + exp(-x))
 Returns a `Float64` number.
 """
 function sigmoid_der(x::Float64)::Float64
-    s = sigmoid(x)
-    s*(1 - s)
+    s::Float64 = sigmoid(x)
+    s*(one(x) - s)
 end
 
 """
@@ -58,7 +59,7 @@ end
 Rectified linear unit activation function. Same effect as ``max(0, x)``.\\
 Returns a `Float64` number.
 """
-ReLU(x::Float64)::Float64 = x > 0 ? x : 0
+ReLU(x::Float64)::Float64 = x > zero(x) ? x : zero(x)
 
 """
     ReLU_der(x::Float64)
@@ -66,19 +67,18 @@ ReLU(x::Float64)::Float64 = x > 0 ? x : 0
 'Derivative' rectified linear unit activation function.\\
 Returns a `Float64` number.
 """
-ReLU_der(x::Float64)::Float64 = x > 0 ? 1 : 0
+ReLU_der(x::Float64)::Float64 = x > zero(x) ? one(x) : zero(x)
 
 """
     init_para(net)
 
 Creates a vector storing type ``Layer`` with the parameters (weights, biases, and values) for all neurons in every layer.
 """
-function init_para(net::Network)::Array
-    para = Layer[]
+function init_para(net::Network)::Array{Layer}
+    para = Layer{Float64}[]
     for i ∈ 1:length(net.layer_dims)
         i == 1 ? push!(para, Layer(zeros(Float64, (1, 1)), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]))) : push!(para, Layer(rand(Float64, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i])))
     end
-
     para
 end
 
@@ -96,7 +96,6 @@ function fwd_prop!(input::Array, para::Array)::Array
         i < n ? para[i].cache = ReLU.(para[i].Z) : para[i].cache = sigmoid.(para[i].Z)
         #para[i].cache = sigmoid.(para[i].Z)
     end
-
     para
 end
 #=
@@ -118,7 +117,7 @@ end
 Modifies ``para`` input. Compares between output and expected output and changes the weights and biases depending on the cost function.
 """
 function back_prop!(T, Y, para, l_rate)::Array
-    n = length(para)
+    #n = length(para)
     @assert length(Y) == length(T) "Not the same size"
     error = (Y - T)
     #errorsqrd = (error.^2)./length(Y)
@@ -133,7 +132,6 @@ function back_prop!(T, Y, para, l_rate)::Array
             para[end - i + 1].b -= l_rate*g1
         end
     end
-
     para
 end
 
@@ -170,10 +168,8 @@ function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 
         #learn_rate = learn_rate*β
         i != epochs ? nothing : show(parameters[end].cache)
     end
-    
     parameters, error
 end
-#@code_warntype
 
 """
     testing()
@@ -186,11 +182,12 @@ function testing(error::Array)
         xlabel = "iterations",
         ylabel = "cost"
     )
-
     p
 end
 
-paras, error = training(x_, y_, [2, 2, 2, 2], 0.10, 100)
+#paras, error = training(x_, y_, [2, 2, 2, 2], 0.10, 100)
 
-p = testing(error)
-savefig(p, "cost_ev.png")
+#p = testing(error)
+#savefig(p, "cost_ev.png")
+
+#code_warntype()

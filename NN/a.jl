@@ -7,16 +7,16 @@ using Statistics, Random, LinearAlgebra, MLJBase
 """
     Activation functions.
 """
-sigmoid(x::Float64)::Float64 = 1/(1 + exp(-x))
+sigmoid(x::Float64)::Float64 = one(x)/(one(x) + exp(-x))
 
 function sigmoid_back(x::Float64)::Float64
     s = sigmoid(x)
-    s*(1 - s)
+    s*(one(s) - s)
 end
 
-ReLU(x::Float64)::Float64 = x > 0 ? x : 0
+ReLU(x::Float64)::Float64 = x > zero(x) ? x : zero(x)
 
-ReLU_back(x::Float64)::Float64 = x > 0 ? 1 : 0
+ReLU_back(x::Float64)::Float64 = x > zero(x) ? one(x) : zero(x)
 
 
 """
@@ -282,4 +282,3 @@ end
 
 x_tr_raw, y_tr_raw = MNIST.(split = :train)[:]
 x_te_raw, y_te_raw = MNIST.(split = :test)[:]
-
