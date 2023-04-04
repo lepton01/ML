@@ -75,7 +75,7 @@ function main(model, epoc::Int)
     lr = 0.01
     opt = ADAM(lr)
     loss_h = Float32[]
-    for _ ∈ 1:epoc
+    for i ∈ 1:epoc
         train!(loss, ps, [(x_train, y_train)], opt)
         train_l = loss(x_train, y_train)
         push!(loss_h, train_l)
