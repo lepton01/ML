@@ -9,8 +9,8 @@ using ProfileView, Cthulhu
 #X = Float64.(hcat(real, fake))
 #Y = vcat(ones(train_size), zeros(train_size))
 
-x_ = [1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
-y_ = [0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
+x_ = Float64[1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
+y_ = Float64[0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
 
 """
     Network(layer_dims::Vector, n_layers::Int)
@@ -27,11 +27,11 @@ end
 `W` is the weights matrix, `b` is the biases vector, and `Z` is the vector of values to enter the activation function,\\
 and `cache` is the vector of values to input to the next layer.
 """
-mutable struct Layer{T<:AbstractFloat}
-    W::Array{T}
-    b::Vector{T}
-    Z::Array{T}
-    cache::Array{T}
+mutable struct Layer{T<:AbstractArray{Float64}}
+    W::T
+    b::T
+    Z::T
+    cache::T
 end
 
 """
@@ -74,12 +74,12 @@ ReLU_der(x::Float64)::Float64 = x > zero(x) ? one(x) : zero(x)
 
 Creates a vector storing type ``Layer`` with the parameters (weights, biases, and values) for all neurons in every layer.
 """
-function init_para(net::Network)::Array{Layer}
+function init_para(net::Network)::Array{Layer{Float64}}
     para = Layer{Float64}[]
     for i ∈ 1:length(net.layer_dims)
         i == 1 ? push!(para, Layer(zeros(Float64, (1, 1)), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]))) : push!(para, Layer(rand(Float64, (net.layer_dims[i], net.layer_dims[i - 1])), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i]), zeros(Float64, net.layer_dims[i])))
     end
-    para
+    return para
 end
 
 """
@@ -89,14 +89,14 @@ Modifies the ``para`` argument. ``input`` is an array of the initial inputs to t
 ``para`` is a ``Vector{Layer}`` containing all the parameters.
 """
 function fwd_prop!(input::Array, para::Array)::Array
-    n = length(para)
+    n::Int = length(para)
     para[1].cache = input
     for i ∈ 2:n
         para[i].Z = muladd(para[i].W, para[i - 1].cache, para[i].b)
         i < n ? para[i].cache = ReLU.(para[i].Z) : para[i].cache = sigmoid.(para[i].Z)
         #para[i].cache = sigmoid.(para[i].Z)
     end
-    para
+    return para
 end
 #=
 """
@@ -119,7 +119,7 @@ Modifies ``para`` input. Compares between output and expected output and changes
 function back_prop!(T, Y, para, l_rate)::Array
     #n = length(para)
     @assert length(Y) == length(T) "Not the same size"
-    error = (Y - T)
+    error::Array{Float64} = Y - T
     #errorsqrd = (error.^2)./length(Y)
     g1 = -2*error
     #g2 = sigmoid_der(T)
@@ -132,7 +132,7 @@ function back_prop!(T, Y, para, l_rate)::Array
             para[end - i + 1].b -= l_rate*g1
         end
     end
-    para
+    return para
 end
 
 
@@ -144,9 +144,9 @@ end
 Calls creation and propagation functions, modifies the parameters for layers,\\
 and returns the final ``parameters`` array containing the info for all layers and their neurons.
 """
-function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 100)::Tuple
+function training(X, Y, dims::Vector{Int}, learn_rate::Float64 = 0.01, epochs::Int = 100)::Tuple
     #r(t::Int)::Float64 = exp(-t)
-    r(t::Int64) = 1^(-t)
+    r(t::Int64)::Float64 = one(t)^(-t)
     Net = Network(dims)
     parameters = init_para(Net)
     if size(X, 1) != 2
@@ -155,7 +155,7 @@ function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 
     if size(Y, 1) != 2
         reshape!(Y, 2, :)
     end
-    error = Array{Float64}(undef, (size(X)[1], epochs))
+    error = Array{Float64}(undef, (size(X, 1), epochs))
     for i ∈ 1:epochs
         for j ∈ 1:length(X[1, :])
             parameters = fwd_prop!(X[:, j], parameters)
@@ -168,7 +168,7 @@ function training(X, Y, dims::Vector, learn_rate::Float64 = 0.01, epochs::Int = 
         #learn_rate = learn_rate*β
         i != epochs ? nothing : show(parameters[end].cache)
     end
-    parameters, error
+    return parameters, error
 end
 
 """
@@ -176,13 +176,13 @@ end
 
 a
 """
-function testing(error::Array)
+function testing(error::Array{Float64})
     p = plot(error[1, :])
     plot!(error[2, :],
         xlabel = "iterations",
         ylabel = "cost"
     )
-    p
+    return p
 end
 
 #paras, error = training(x_, y_, [2, 2, 2, 2], 0.10, 100)
