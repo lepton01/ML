@@ -9,8 +9,8 @@ using ProfileView, Cthulhu
 #X = Float64.(hcat(real, fake))
 #Y = vcat(ones(train_size), zeros(train_size))
 
-x_ = Float64[1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
-y_ = Float64[0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
+#x_ = Float64[1 1 2 2 -1 -2 -1 -2; 1 2 -1 0 2 1 -1 -2]
+#y_ = Float64[0 0 0 0 1 1 1 1; 0 0 1 1 0 0 1 1]
 
 """
     Network(layer_dims::Vector, n_layers::Int)
@@ -185,9 +185,9 @@ function testing(error::Array{Float64})
     return p
 end
 
-#paras, error = training(x_, y_, [2, 2, 2, 2], 0.10, 100)
+paras, error = training(x_, y_, [2, 2, 2, 2], 0.10, 100)
 
-#p = testing(error)
-#savefig(p, "cost_ev.png")
+p = testing(error)
+savefig(p, "cost_ev.png")
 
 #code_warntype()
