@@ -15,20 +15,17 @@ function main(x::Vector{Float32}, a::Float32, ep::Int = 10_000)
     Y_train = map(x) do i
         real(besselj(a, i))
     end
-    
     X_train = vcat(x', fill(a, (1, length(x))))
     train_SET = [(X_train, Y_train')]
-
     model = Chain(
-        Dense(2 => 16, celu),
+        Dense(2 => 16),
         Dense(16 => 32),
         Dense(32 => 64),
-        Dense(64 => 16),
-        Dense(16 => 1))
-
-    #loss(m, x, y) = mse(m(x), y)
+        Dense(64 => 32),
+        Dense(32 => 16),
+        Dense(16 => 1)
+    )
     loss(m, x, y) = mae(m(x), y)
-    #lr::Float32 = 0.01
     opt = Flux.setup(Flux.Adam(), model)
     loss_log = Float32[]
     for i ∈ 1:ep
