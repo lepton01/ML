@@ -3,7 +3,7 @@
 using LinearAlgebra, Statistics, Random
 using Plots
 using Flux, SpecialFunctions
-using Flux: mse, train!
+using Flux: mse, crossentropy, train!
 
 Random.seed!(1)
 """
@@ -11,38 +11,69 @@ Random.seed!(1)
 
 ¿? SOMETHING
 """
-function main(x::Vector{Float32}, z::Float32, ep::Int = 1_000)
-    target = map(x) do i
-        real(besselj(z, i))
+function main(x::Vector{Float32}, a::Float32, ep::Int = 10_000)
+    y_train = map(x) do i
+        real(besselj(a, i))
     end
+    p = plot(x, y_train)
+    savefig(p, "besselj")
     
-    p = plot(x, target)
-    
-    X = vcat(x', zeros(Float32, length(x))')
-    X[2, :] .= z
-    loader = Flux.DataLoader((X, target), batchsize = 64, shuffle = true)
+    X_train = vcat(x', fill(a, (1,length(x))))
+    train_set = [(X_train, y_train')]
 
     model = Chain(
         Dense(2 => 2, relu),
-        Dense(2 => 4, relu),
-        Dense(4 => 2, relu),
-        Dense(2 => 1),
-    softmax)
+        Dense(2 => 1))
 
     loss(m, x, y) = mse(m(x), y)
-    lr::Float32 = 0.01
+    #lr::Float32 = 0.01
     opt_st = Flux.setup(Adam(), model)
-    loss_h = Float32[]
+    #opt = Descent()
+    loss_log = Float32[]
     for i ∈ 1:ep
-        train!(loss, model, [(X, target')], opt_st)
-        train_l = loss(model, X, target')
-        push!(loss_h, train_l)
-        println("Epoch = $i. Training loss = $train_l")
+        train!(loss, model, train_set, opt_st)
+        train_loss = loss(model, X_train, y_train')
+        push!(loss_log, train_loss)
+        println("Epoch = $i. Training loss = $train_loss")
+        
+        #=
+        losses = Float32[]
+        for (i, data) ∈ enumerate(train_set)
+            input, label = data
+
+            val, grads = Flux.withgradient(model) do m
+                # Any code inside here is differentiated.
+                # Evaluation of the model and loss must be inside!
+                result = m(input)
+                mse(result, label)
+            end
+
+            # Save the loss from the forward pass. (Done outside of gradient.)
+            push!(losses, val)
+
+            # Detect loss of Inf or NaN. Print a warning, and then skip update!
+            if !isfinite(val)
+                @warn "loss is $val on item $i" epoch
+                continue
+            end
+
+            Flux.update!(opt_st, model, grads[1])
+        end
+
+        # Compute some accuracy, and save details as a NamedTuple
+        acc = mean(model(X) .== target')
+        #push!(loss_log, (; acc, losses))
+
+        # Stop training when some criterion is reached
+        if  acc > 0.95
+            println("stopping after $epoch epochs")
+            break
+        end
+        #push!(loss_log, losses)
+        =#
     end
-    ŷ = model(X)
-    p = plot!(x, ŷ')
-    savefig(p, "besselj")
-    return mean(ŷ .== target')*100
+    y_hat = model(X_train)
+    return mean(y_hat .== y_train')*100
 end
 
-main(collect(Float32, LinRange(0.01, 10, 1000)), Float32(1.5))
+main(collect(Float32, LinRange(0.01, 50, 10000)), Float32(1.5))
