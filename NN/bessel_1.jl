@@ -84,9 +84,10 @@ function bessel_appx(x::Vector{Float32}, a::Float32, ep::Int = 10_000)
             push!(losses, l)
             Flux.update!(opt, model, grads[1])
         end
-        push!(loss_log, sum(losses))
+        l2 = sum(losses)
+        push!(loss_log, l2)
         if rem(i, 500) == 0
-            println("Epoch = $i. Training loss = $(sum(losses))")
+            println("Epoch = $i. Training loss = $l2")
         end
         #=
         # Stop training when some criterion is reached
