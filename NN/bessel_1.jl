@@ -1,15 +1,13 @@
 #01/04/2023
-
 using LinearAlgebra, Statistics, Random
 using Plots
 using Flux, SpecialFunctions
 using Flux: mae, crossentropy, train!
-
 Random.seed!(1)
 """
-    main()
+    bessel_appx(x, a, ep)
 
-¿? SOMETHING
+Approximates the first kind Bessel function centered at `a`.
 """
 function bessel_appx(x::Vector{Float32}, a::Float32, ep::Int = 10_000)
     Y_train = map(x) do i
@@ -38,6 +36,7 @@ function bessel_appx(x::Vector{Float32}, a::Float32, ep::Int = 10_000)
     =#
     
     model = Chain(
+        BatchNorm(2),
         Dense(2 => 128, relu),
         Dense(128 => 128, relu),
         Dense(128 => 256, relu),
@@ -99,10 +98,11 @@ function bessel_appx(x::Vector{Float32}, a::Float32, ep::Int = 10_000)
         =#
     end
     Y_hat = model(X_train |> gpu) |> cpu
+    lab = ["Bessel" "App"]
     p = plot(x, Y_train)
-    plot!(x, Y_hat')
+    plot!(x, Y_hat', labels = lab[2])
     savefig(p, "besselj")
     return mean(isapprox.(Y_hat, Y_train'; atol = 0.01))*100
 end
 
-@time bessel_appx(collect(Float32, LinRange(0.01, 50, 10000)), Float32(1.5))
+@time bessel_appx(collect(Float32, LinRange(0.01, 50, 2000)), Float32(0.5))
