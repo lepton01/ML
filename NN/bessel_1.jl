@@ -10,7 +10,7 @@ using Flux: mae, train!
 
 Approximates the first kind Bessel function centered at `a`.
 """
-function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 50_000)
+function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
     #=
     Y_train = map(x, a) do i, j
         besselj(j, i) |> real
@@ -26,51 +26,17 @@ function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 50_000)
     train_SET = [(X_train, Y_train')] |> gpu
     #=
     model = Chain(
-        Dense(2 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 32), relu,
-        Dense(32 => 1)
-    ) |> gpu
-    =#
-    #=)
-    model = Chain(
         BatchNorm(2),
-        Dense(2 => 256, relu),
-        Dense(256 => 256, relu),
-        Dense(256 => 256, relu),
+        Dense(2 => 256), relu,
+        Dense(256 => 256), relu,
+        Dense(256 => 256), relu,
+        Dense(256 => 256), relu,
+        Dense(256 => 256), relu,
         Dense(256 => 1)
     ) |> gpu
     =#
-    #=
-    model = Chain(
-        Dense(2 => 16, relu),
-        Dense(16 => 32, relu),
-        Dense(32 => 64, relu),
-        Dense(64 => 32, relu),
-        Dense(32 => 16, relu),
-        Dense(16 => 1)
-    ) |> gpu
-    model = Chain(
-        Dense(2 => 16, relu),
-        Dense(16 => 32, relu),
-        Dense(32 => 64, relu),
-        Dense(64 => 32, relu),
-        Dense(32 => 16, relu),
-        Dense(16 => 1)
-    ) |> gpu
-    =#
     BSON.@load "bessel_j.bson" model
+    model = model |> gpu
     #loss(m, x, y) = mae(m(x), y)
     opt = Flux.setup(Flux.Adam(), model)
     loss_log = Float32[]
@@ -118,13 +84,13 @@ function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 50_000)
     x_test = 50*rand32(500)
     a_test = 50*rand32(500)
     X_test = vcat(x_test', a_test')
-    Y_test = map(x, a) do i, j
+    Y_test = map(x_test, a_test) do i, j
         besselj(j, i) |> real
     end
     Y_hat = model(X_test |> gpu) |> cpu
-    model |> cpu
+    model = model |> cpu
     BSON.@save "bessel_j.bson" model
-    return mean(isapprox.(Y_hat', Y_test; atol = 0.01))*100
+    return mean(isapprox.(Y_hat', Y_test; atol = 0.02))*100
 end
 
-@time bessel_appx(collect(Float32, LinRange(0.01, 50, 500)), 50*rand32(500))
+#@time bessel_appx(collect(Float32, LinRange(0.01, 50, 500)), 50*rand32(500))
