@@ -2,7 +2,7 @@
 using LinearAlgebra, Statistics, Random
 using Plots
 using Flux, SpecialFunctions, BSON
-using Flux: mae, train!
+using Flux: mae
 #Random.seed!(1)
 #gr(1600, 900)
 """
@@ -10,29 +10,27 @@ using Flux: mae, train!
 
 Approximates the first kind Bessel function centered at `a`.
 """
-function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
-    #=
+function bessel_train(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
+    #= this can be use to train the model to a particular value of a.
     Y_train = map(x, a) do i, j
         besselj(j, i) |> real
     end
     X_train = vcat(x', fill(a, (1, length(x))))
     =#
-    
+
     Y_train = map(x, a) do i, j
         besselj(j, i) |> real
     end
     X_train = vcat(x', a')
-    
+
     train_SET = [(X_train, Y_train')] |> gpu
     #=
     model = Chain(
-        BatchNorm(2),
-        Dense(2 => 256), relu,
-        Dense(256 => 256), relu,
-        Dense(256 => 256), relu,
-        Dense(256 => 256), relu,
-        Dense(256 => 256), relu,
-        Dense(256 => 1)
+        Dense(2 => 512), relu,
+        Dense(512 => 512), relu,
+        Dense(512 => 512), relu,
+        Dense(512 => 512), relu,
+        Dense(512 => 1)
     ) |> gpu
     =#
     BSON.@load "bessel_j.bson" model
@@ -41,15 +39,6 @@ function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
     opt = Flux.setup(Flux.Adam(), model)
     loss_log = Float32[]
     for i ∈ 1:ep
-        #=
-        train!(loss, model, train_SET, opt)
-        train_loss = loss(model, X_train, Y_train')
-        push!(loss_log, train_loss)
-        if rem(i, 100) == 0
-            println("Epoch = $i. Training loss = $train_loss")
-        end
-        =#
-
         losses = Float32[]
         for data ∈ train_SET
             input, label = data
@@ -66,7 +55,6 @@ function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
         if rem(i, 1000) == 0
             println("Epoch = $i. Training loss = $l2")
         end
-
         #=
         # Stop training when some criterion is reached
         acc = mean(isapprox.(model(X_train), Y_train'; atol = 0.05))
@@ -81,8 +69,8 @@ function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
     #p = plot(x, Y_train, labels = lab[1])
     #plot!(x, Y_hat', labels = lab[2])
     #savefig(p, "besselj")
-    x_test = 50*rand32(500)
-    a_test = 50*rand32(500)
+    x_test = 50*rand32(1000)
+    a_test = 50*rand32(1000)
     X_test = vcat(x_test', a_test')
     Y_test = map(x_test, a_test) do i, j
         besselj(j, i) |> real
@@ -92,5 +80,4 @@ function bessel_appx(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
     BSON.@save "bessel_j.bson" model
     return mean(isapprox.(Y_hat', Y_test; atol = 0.02))*100
 end
-
-#@time bessel_appx(collect(Float32, LinRange(0.01, 50, 500)), 50*rand32(500))
+#@time bessel_train(collect(Float32, LinRange(0.01, 50, 1000)), 50*rand32(1000))
