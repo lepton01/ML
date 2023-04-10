@@ -1,101 +1,40 @@
 #09/04/2023
 include("bessel_1.jl")
 
+s::String = "bessel_j_3.bson"
+@time bessel_train(collect(Float32, LinRange(0.01, 50, 5000)), 50*rand32(5000), s)
 
 xg::Float32 = 2.
 ag::Float32 = 1.
 
+
 """
-    bessel_model1(x, a)
+    bessel_model(x, a)
 
 Approximates the first kind Bessel function centered at ``a`` given ``x``.
 """
-function bessel_model1(x::AbstractFloat, a::AbstractFloat)
-    BSON.@load "bessel_j.bson" model
+function bessel_model(x::AbstractFloat, a::AbstractFloat, model_name::String)
+    BSON.@load model_name model
     X = Array{Float32}(undef, (2, 1))
     X[:, 1] = [x, a]
     v = model(X)[end]
-    return v, v - besselj(x, a)
+    return v, v - besselj(a, x)
 end
-#@time appx11 = bessel_model1(xg, ag)
+#@time appx11 = bessel_model(xg, ag, s)
 
 
 """
-    bessel_model1_gpu(x, a)
+    bessel_model_gpu(x, a)
 
 Approximates the first kind Bessel function centered at ``a`` given ``x``.\\
 Uses CUDA to compute on the GPU.
 """
-function bessel_model1_gpu(x::AbstractFloat, a::AbstractFloat)
-    BSON.@load "bessel_j.bson" model
+function bessel_model_gpu(x::AbstractFloat, a::AbstractFloat, model_name::String)
+    BSON.@load model_name model
     model = model |> gpu
     X = Array{Float32}(undef, (2, 1))
     X[:, 1] = [x, a]
     v = model(X |> gpu) |> cpu
-    return v[end], v[end] - besselj(x, a)
+    return v[end], v[end] - besselj(a, x)
 end
-#@time appx12 = bessel_model1_gpu(xg, ag)
-
-
-"""
-    bessel_model2(x, a)
-
-Approximates the first kind Bessel function centered at ``a`` given ``x``.
-"""
-function bessel_model2(x::AbstractFloat, a::AbstractFloat)
-    BSON.@load "bessel_j_2.bson" model
-    X = Array{Float32}(undef, (2, 1))
-    X[:, 1] = [x, a]
-    v = model(X)[end]
-    return v, v - besselj(x, a)
-end
-#@time appx21 = bessel_model2(xg, ag)
-
-
-"""
-    bessel_model2_gpu(x, a)
-
-Approximates the first kind Bessel function centered at ``a`` given ``x``.\\
-Uses CUDA to compute on the GPU.
-"""
-function bessel_model2_gpu(x::AbstractFloat, a::AbstractFloat)
-    BSON.@load "bessel_j_2.bson" model
-    model = model |> gpu
-    X = Array{Float32}(undef, (2, 1))
-    X[:, 1] = [x, a]
-    v = model(X |> gpu) |> cpu
-    return v[end], v[end] - besselj(x, a)
-end
-#@time appx22 = bessel_model2_gpu(xg, ag)
-
-
-"""
-    bessel_model1(x, a)
-
-Approximates the first kind Bessel function centered at ``a`` given ``x``.
-"""
-function bessel_model3(x::AbstractFloat, a::AbstractFloat)
-    BSON.@load "bessel_j_3.bson" model
-    X = Array{Float32}(undef, (2, 1))
-    X[:, 1] = [x, a]
-    v = model(X)[end]
-    return v, v - besselj(x, a)
-end
-#@time appx31 = bessel_model3(xg, ag)
-
-
-"""
-    bessel_approx3_gpu(x, a)
-
-Approximates the first kind Bessel function centered at ``a`` given ``x``.\\
-Uses CUDA to compute on the GPU.
-"""
-function bessel_model3_gpu(x::AbstractFloat, a::AbstractFloat)
-    BSON.@load "bessel_j_3.bson" model
-    model = model |> gpu
-    X = Array{Float32}(undef, (2, 1))
-    X[:, 1] = [x, a]
-    v = model(X |> gpu) |> cpu
-    return v[end], v[end] - besselj(x, a)
-end
-#@time appx32 = bessel_model3_gpu(xg, ag)
+#@time appx12 = bessel_model_gpu(xg, ag, s)

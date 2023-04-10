@@ -10,7 +10,7 @@ using Flux: mae
 
 Approximates the first kind Bessel function centered at `a`.
 """
-function bessel_train(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
+function bessel_train(x::Vector{Float32}, a::Vector{Float32}, model_name::String, ep::Int = 10_000)
     @assert x isa Vector "x must be of type Vector for training"
     @assert a isa Vector "a must be of type Vector for training"
     #= this can be use to train the model to a particular value of a.
@@ -35,7 +35,7 @@ function bessel_train(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
         Dense(512 => 1)
     ) |> gpu
     =#
-    BSON.@load "bessel_j.bson" model
+    BSON.@load model_name model
     model = model |> gpu
     #loss(m, x, y) = mae(m(x), y)
     opt = Flux.setup(Flux.Adam(), model)
@@ -79,7 +79,7 @@ function bessel_train(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
     end
     Y_hat = model(X_test |> gpu) |> cpu
     model = model |> cpu
-    BSON.@save "bessel_j.bson" model
+    BSON.@save model_name model
     return mean(isapprox.(Y_hat', Y_test; atol = 0.02))*100
 end
 #@time bessel_train(collect(Float32, LinRange(0.01, 50, 1000)), 50*rand32(1000))
