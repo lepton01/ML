@@ -11,6 +11,8 @@ using Flux: mae
 Approximates the first kind Bessel function centered at `a`.
 """
 function bessel_train(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
+    @assert x isa Vector "x must be of type Vector for training"
+    @assert a isa Vector "a must be of type Vector for training"
     #= this can be use to train the model to a particular value of a.
     Y_train = map(x, a) do i, j
         besselj(j, i) |> real
@@ -19,7 +21,7 @@ function bessel_train(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
     =#
 
     Y_train = map(x, a) do i, j
-        besselj(j, i) |> real
+        besselj(j, i) |> real .|> Float32
     end
     X_train = vcat(x', a')
 
