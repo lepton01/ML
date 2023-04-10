@@ -2,7 +2,7 @@
 include("bessel_1.jl")
 
 s::String = "bessel_j_3.bson"
-@time bessel_train(collect(Float32, LinRange(0.01, 50, 5000)), 50*rand32(5000), s)
+#@time bessel_train(collect(Float32, LinRange(0.01, 50, 5000)), 50*rand32(5000), s)
 
 xg::Float32 = 2.
 ag::Float32 = 1.
