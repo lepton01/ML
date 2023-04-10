@@ -69,8 +69,8 @@ function bessel_train(x::Vector{Float32}, a::Vector{Float32}, ep::Int = 10_000)
     #p = plot(x, Y_train, labels = lab[1])
     #plot!(x, Y_hat', labels = lab[2])
     #savefig(p, "besselj")
-    x_test = 50*rand32(1000)
-    a_test = 50*rand32(1000)
+    x_test = 50*rand32(length(x))
+    a_test = 50*rand32(length(a))
     X_test = vcat(x_test', a_test')
     Y_test = map(x_test, a_test) do i, j
         besselj(j, i) |> real

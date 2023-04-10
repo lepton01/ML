@@ -4,6 +4,7 @@ include("bessel_1.jl")
 xg::Float32 = 3.0
 ag::Float32 = 1.0
 
+# Compute the real value for comparison.
 besselReal = besselj(ag, xg)
 
 """
