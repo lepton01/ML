@@ -1,7 +1,10 @@
 #09/04/2023
-include("bessel_1.jl")
+include("bessel_train.jl")
+include("model_creation.jl")
 
-s::String = "bessel_j_3.bson"
+#@time bessel_model_creation(collect(Float32, LinRange(0.01, 50, 10000)), 50*rand32(10000), "bessel_j_4.bson")
+
+s::String = "bessel_j_4.bson"
 #@time bessel_train(collect(Float32, LinRange(0.01, 50, 5000)), 50*rand32(5000), s)
 
 xg::Float32 = 2.
