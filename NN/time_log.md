@@ -55,3 +55,81 @@ This means that the input vector is 2 rows, followed by a ``normBatch`` layer si
 83.790833 seconds (42.40 M allocations: 2.869 GiB, 0.61% gc time) - 87.8%\
 86.590092 seconds (42.40 M allocations: 2.869 GiB, 0.60% gc time) - 89.6%\
 85.640043 seconds (42.38 M allocations: 2.869 GiB, 0.60% gc time) - 88.4%
+
+## Creation and training after `activation` error
+
+### Model 5
+
+Composed by:
+
+````jl
+model = Chain(
+        BatchNorm(2),
+        Dense(2 => 512, relu),
+        Dense(512 => 512, relu),
+        Dense(512 => 512, relu),
+        Dense(512 => 512, relu),
+        Dense(512 => 512, relu),
+        Dense(512 => 512, relu),
+        Dense(512 => 512, relu),
+        Dense(512 => 512, relu),
+        Dense(512 => 1)
+    ) |> gpu
+````
+
+@time to create: `0.440761 seconds (838.41 k allocations: 230.186 MiB, 10.66% gc time, 69.45% compilation time) - 1.0%`.\
+Trained with 1000 elements of `x` and `a`:\
+@time to do: `178.459372 seconds (77.12 M allocations: 5.138 GiB, 0.69% gc time, 0.85% compilation time) - 81.6%`.\
+@time to do: `174.849582 seconds (71.72 M allocations: 4.857 GiB, 0.65% gc time) - 80.9%`.\
+@time to do: `170.472582 seconds (71.82 M allocations: 4.860 GiB, 0.68% gc time) - 80.5%`.\
+@time to do: `171.117404 seconds (71.82 M allocations: 4.860 GiB, 0.66% gc time) - 78.6%`.\
+@time to do: `170.619249 seconds (71.82 M allocations: 4.860 GiB, 0.65% gc time) - 78.4%`.
+
+### Model 6
+
+Composed by:
+
+````jl
+model = Chain(
+        BatchNorm(2),
+        Dense(2 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1)
+    ) |> gpu
+````
+
+@time to create: `0.233445 seconds (11.46 k allocations: 416.987 MiB, 19.19% gc time) - 1.5%`.\
+Trained with 1000 elements of `x` and `a`:\
+@time to do: `320.676879 seconds (143.15 M allocations: 8.408 GiB, 0.57% gc time, 7.57% compilation time) - 83.2%`.\
+@time to do: `302.685313 seconds (50.74 M allocations: 3.691 GiB, 0.32% gc time) - 85.8%`.\
+@time to do: `305.424073 seconds (50.74 M allocations: 3.691 GiB, 0.34% gc time) - 85.5%`.\
+@time to do: `309.525026 seconds (50.73 M allocations: 3.690 GiB, 0.34% gc time) - 84.2`.\
+@time to do: `315.578199 seconds (50.74 M allocations: 3.691 GiB, 0.31% gc time) - 81.3%`.
+
+### Model 7
+
+Composed by:
+
+````jl
+model = Chain(
+        BatchNorm(2),
+        Dense(2 => 1024, celu),
+        Dense(1024 => 1024, celu),
+        Dense(1024 => 1024, celu),
+        Dense(1024 => 1024, celu),
+        Dense(1024 => 1024, celu),
+        Dense(1024 => 1)
+    ) |> gpu
+````
+
+@time to create: `1.476337 seconds (3.85 M allocations: 623.506 MiB, 3.48% gc time, 55.47% compilation time) - 6.3%`.\
+And `0.257983 seconds (11.41 k allocations: 416.969 MiB, 15.07% gc time) - 1.7%`\
+Trained with 1000 elements of `x` and `a`:\
+@time to do: `269.072777 seconds (58.28 M allocations: 4.098 GiB, 0.43% gc time, 0.61% compilation time) - 82.8%`.\
+@time to do: `266.389997 seconds (51.51 M allocations: 3.751 GiB, 0.41% gc time) - 46.5%`.\
+@time to do: `287.154505 seconds (51.51 M allocations: 3.751 GiB, 0.38% gc time) - 5.5`.\
+@time to do: `281.704087 seconds (51.51 M allocations: 3.751 GiB, 0.36% gc time) - 4.3%`.\
+@time to do: `281.997154 seconds (51.51 M allocations: 3.751 GiB, 0.36% gc time) - 3.0%`.

@@ -2,19 +2,17 @@
 include("bessel_train.jl")
 include("model_creation.jl")
 
-#@time bessel_model_creation(collect(Float32, LinRange(0.01, 50, 10000)), 50*rand32(10000), "bessel_j_4.bson")
-
-s::String = "bessel_j_4.bson"
-#@time bessel_train(collect(Float32, LinRange(0.01, 50, 5000)), 50*rand32(5000), s)
+s::String = "bessel_j_7.bson"
+#@time bessel_model_creation(collect(Float32, LinRange(0.01, 50, 1000)), 50*rand32(1000), s)
+#@time bessel_train(collect(Float32, LinRange(0.01, 50, 1000)), 50*rand32(1000), s)
 
 xg::Float32 = 2.
 ag::Float32 = 1.
 
-
 """
-    bessel_model(x, a)
+    bessel_model(x, a, s)
 
-Approximates the first kind Bessel function centered at ``a`` given ``x``.
+Approximates the first kind Bessel function centered at ``a`` given ``x``. `s` determines the model to use.
 """
 function bessel_model(x::AbstractFloat, a::AbstractFloat, model_name::String)
     BSON.@load model_name model
@@ -25,11 +23,10 @@ function bessel_model(x::AbstractFloat, a::AbstractFloat, model_name::String)
 end
 #@time appx11 = bessel_model(xg, ag, s)
 
-
 """
     bessel_model_gpu(x, a)
 
-Approximates the first kind Bessel function centered at ``a`` given ``x``.\\
+Approximates the first kind Bessel function centered at ``a`` given ``x``. `s` determines the model to use.\\
 Uses CUDA to compute on the GPU.
 """
 function bessel_model_gpu(x::AbstractFloat, a::AbstractFloat, model_name::String)
