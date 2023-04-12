@@ -6,11 +6,11 @@ using Flux: mae
 #Random.seed!(1)
 #gr(1600, 900)
 """
-    bessel_appx(x, a, ep)
+    bessel_train!(x, a, model_name, ep)
 
-Approximates the first kind Bessel function centered at `a`.
+Trains the given `model_name` to approximate the first kind Bessel function centered at `a` with exaples of `x`. `ep` is the number of epochs to train.
 """
-function bessel_train(x::Vector{Float32}, a::Vector{Float32}, model_name::String, ep::Int = 10_000)
+function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::String, ep::Int = 10_000)
     @assert x isa Vector "x must be of type Vector for training"
     @assert a isa Vector "a must be of type Vector for training"
     
@@ -21,7 +21,7 @@ function bessel_train(x::Vector{Float32}, a::Vector{Float32}, model_name::String
     X_train = vcat(x', fill(a, (1, length(x))))
     =#
     Y_train = map(x, a) do i, j
-        besselj(j, i) |> real .|> Float32
+        besselj(j, i) |> real
     end
     X_train = vcat(x', a')
     train_SET = [(X_train, Y_train')] |> gpu
