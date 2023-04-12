@@ -1,18 +1,13 @@
 #01/04/2023
-using LinearAlgebra, Statistics, Random
-using Plots
-using Flux, SpecialFunctions, BSON
-using Flux: mae
-#Random.seed!(1)
-#gr(1600, 900)
 """
-    bessel_train!(x, a, model_name, ep)
+    bessel_train!(x, a, model_name, ep = 1_000)
 
-Trains the given `model_name` to approximate the first kind Bessel function centered at `a` with exaples of `x`. `ep` is the number of epochs to train.
+Train the `model_name` model to approximate the first kind Bessel function centered at `a` with examples of both `x` and `a`. `ep` is the number of epochs to train.
 """
-function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::String, ep::Int = 10_000)
-    @assert x isa Vector "x must be of type Vector for training"
-    @assert a isa Vector "a must be of type Vector for training"
+function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::String, ep::Int = 1_000)
+    @assert x isa Vector "x must be of type Vector for training."
+    @assert a isa Vector "a must be of type Vector for training."
+    @assert length(x) == length(a) "must be of the same length."
     
     #= this can be use to train the model to a particular value of a.
     Y_train = map(x, a) do i, j
@@ -26,7 +21,7 @@ function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::Strin
     X_train = vcat(x', a')
     train_SET = [(X_train, Y_train')] |> gpu
 
-    BSON.@load model_name model
+    BSON.@load model_name*".bson" model
     model = model |> gpu
     #loss(m, x, y) = mae(m(x), y)
     opt = Flux.setup(Flux.Adam(), model)
@@ -44,7 +39,7 @@ function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::Strin
         end
         l2 = sum(losses)
         push!(loss_log, l2)
-        if rem(i, 1000) == 0
+        if rem(i, 100) == 0
             println("Epoch = $i. Training loss = $l2")
         end
         #=
@@ -69,7 +64,6 @@ function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::Strin
     end
     Y_hat = model(X_test |> gpu) |> cpu
     model = model |> cpu
-    BSON.@save model_name model
+    BSON.@save model_name*".bson" model
     return mean(isapprox.(Y_hat', Y_test; atol = 0.02))*100
 end
-#@time bessel_train(collect(Float32, LinRange(0.01, 50, 1000)), 50*rand32(1000))

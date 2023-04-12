@@ -56,6 +56,9 @@ This means that the input vector is 2 rows, followed by a ``normBatch`` layer si
 86.590092 seconds (42.40 M allocations: 2.869 GiB, 0.60% gc time) - 89.6%\
 85.640043 seconds (42.38 M allocations: 2.869 GiB, 0.60% gc time) - 88.4%
 
+***
+***
+
 ## Creation and training after `activation` error
 
 ### Model 5
@@ -130,6 +133,39 @@ And `0.257983 seconds (11.41 k allocations: 416.969 MiB, 15.07% gc time) - 1.7%`
 Trained with 1000 elements of `x` and `a`:\
 @time to do: `269.072777 seconds (58.28 M allocations: 4.098 GiB, 0.43% gc time, 0.61% compilation time) - 82.8%`.\
 @time to do: `266.389997 seconds (51.51 M allocations: 3.751 GiB, 0.41% gc time) - 46.5%`.\
-@time to do: `287.154505 seconds (51.51 M allocations: 3.751 GiB, 0.38% gc time) - 5.5`.\
+@time to do: `287.154505 seconds (51.51 M allocations: 3.751 GiB, 0.38% gc time) - 5.5%`.\
 @time to do: `281.704087 seconds (51.51 M allocations: 3.751 GiB, 0.36% gc time) - 4.3%`.\
 @time to do: `281.997154 seconds (51.51 M allocations: 3.751 GiB, 0.36% gc time) - 3.0%`.
+
+***
+***
+
+## After important changes
+
+### NN\model_1
+
+Structure:
+
+````jl
+    model = Chain(
+        BatchNorm(2),
+        Dense(2 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1024, relu),
+        Dense(1024 => 1)
+    )
+````
+
+Trained with 1000 elements of `x` and `a` for ``1_000 epochs``:\
+@time to do: `67.507691 seconds (17.03 M allocations: 1.902 GiB, 1.04% gc time, 3.84% compilation time) - 69.1%`.\
+@time to do: `65.906962 seconds (8.63 M allocations: 1.469 GiB, 0.60% gc time) - 86.0%`.\
+@time to do: `84.268995 seconds (8.63 M allocations: 1.469 GiB, 0.52% gc time) - 86.1%`.\
+@time to do: `67.337913 seconds (8.63 M allocations: 1.469 GiB, 0.36% gc time) - 85.9%`.\
+@time to do: `79.021504 seconds (8.63 M allocations: 1.469 GiB, 0.51% gc time) - 85.9%`.
