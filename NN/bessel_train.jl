@@ -4,12 +4,12 @@
     bessel_train!(x::Real, a::Real, n::Int, model_name, ep = 5_000)
 
 Trains the `model_name.bson` model to approximate the fisrt kind Bessel function
-    centered at `a`.
+centered at `a`.
 
 When given `Vector`s these are used directly to train for all epochs.
 
-When given `Real`s as inputs, every epoch generates a new random trainig data
-where `x` and `a` are the upper boundary for their respective values to train with.
+When given `Real`s as inputs, every epoch generates a new random training data
+where `x` and `a` are the upper boundary for these new values.
 
 It is required to specify `n`, as it determines the length of the random `Vector`s
 generated to train.
@@ -61,7 +61,7 @@ function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::Strin
     Y_test = map(x_test, a_test) do i, j
         besselj(j, i) |> real
     end
-    Y_hat = model(X_test |> gpu) |> cpu
+    Y_hat::AbstractArray = model(X_test |> gpu) |> cpu
     model = model |> cpu
     BSON.@save model_name*".bson" model
     return mean(isapprox.(Y_hat', Y_test; atol = 0.015))*100
@@ -109,7 +109,7 @@ function bessel_train!(x::Real, a::Real, n::Int, model_name::String, ep::Int = 5
     Y_test = map(x_test, a_test) do i, j
         besselj(j, i) |> real
     end
-    Y_hat = model(X_test |> gpu) |> cpu
+    Y_hat::AbstractArray = model(X_test |> gpu) |> cpu
     model = model |> cpu
     BSON.@save model_name*".bson" model
     return mean(isapprox.(Y_hat', Y_test; atol = 0.015))*100
