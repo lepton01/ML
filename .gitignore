@@ -1,7 +1,3 @@
-Manifest.toml
-sin(ax).png
-loss_test.jl
-FAL.jl
-datagen.jl
-cosa(ax).png
-.vscode
+**/Manifest.toml
+**/.vscode
+**/*.bson

@@ -12,8 +12,8 @@ n::Int = 5_000
 #bessel_model_creation(s)
 #@time bessel_train!(x_max*rand32(n), a_max*rand32(n), s, 1_000)
 #@time bessel_train!(x_max, a_max, n, s, 1_000)
-#x_test::Float32 = x_max*rand32()
-#a_test::Float32 = a_max*rand32()
+x_test::Float32 = x_max*rand32()
+a_test::Float32 = a_max*rand32()
 
 """
     bessel_approx(x, a, model_name)
@@ -29,7 +29,7 @@ function bessel_approx(x::AbstractFloat, a::AbstractFloat, model_name::String)
     out = model(X)[end]
     return out, out - besselj(a, x)
 end
-@time appx11 = bessel_approx(x_test, a_test, s)
+#@time appx11 = bessel_approx(x_test, a_test, s)
 """
     bessel_approx_gpu(x, a, model_name)
 

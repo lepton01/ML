@@ -1,8 +1,20 @@
 #01/04/2023
 """
-    bessel_train!(x, a, model_name, ep = 5_000)
+    bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name, ep = 5_000)
+    bessel_train!(x::Real, a::Real, n::Int, model_name, ep = 5_000)
 
-Train the `model_name` model to approximate the first kind Bessel function centered at `a` with examples of both `x` and `a`. `ep` is the number of epochs to train.
+Trains the `model_name.bson` model to approximate the fisrt kind Bessel function
+    centered at `a`.
+
+When given `Vector`s these are used directly to train for all epochs.
+
+When given `Real`s as inputs, every epoch generates a new random trainig data
+where `x` and `a` are the upper boundary for their respective values to train with.
+
+It is required to specify `n`, as it determines the length of the random `Vector`s
+generated to train.
+
+`ep` is the number of epochs to train for.
 """
 function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::String, ep::Int = 5_000)
     @assert x isa Vector "x must be of type Vector for training."
@@ -54,7 +66,6 @@ function bessel_train!(x::Vector{Float32}, a::Vector{Float32}, model_name::Strin
     BSON.@save model_name*".bson" model
     return mean(isapprox.(Y_hat', Y_test; atol = 0.015))*100
 end
-
 function bessel_train!(x::Real, a::Real, n::Int, model_name::String, ep::Int = 5_000)
     BSON.@load model_name*".bson" model
     model = model |> gpu
