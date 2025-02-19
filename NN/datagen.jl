@@ -1,19 +1,18 @@
 #16/03/2023
 
-using Plots
-using Statistics
+using Statistics, GLMakie
 
 function generate_real_data(n)
     x1 = rand(1, n) .- 0.5
-    x2 = (x1.*x1)*3. .+ randn(1, n)*0.1
+    x2 = (x1 .* x1) * 3.0 .+ randn(1, n) * 0.1
     vcat(x1, x2)
 end
 
 function generate_fake_data(n)
-    θ  = 2π*rand(1, n)
-    r  = rand(1, n)/3
-    x1 = @. r*cos(θ)
-    x2 = @. r*sin(θ) + 0.5
+    θ = 2π * rand(1, n)
+    r = rand(1, n) / 3
+    x1 = @. r * cos(θ)
+    x2 = @. r * sin(θ) + 0.5
     vcat(x1, x2)
 end
 

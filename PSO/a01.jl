@@ -77,7 +77,7 @@ function PSOmax(pop_size::Int, para::Int = 2)
 end
 =#
 
-function PSOmin(pop_size::Int = 100, max_i::Int = 100, para::Int = 2)
+function PSOmin(pop_size::Int=100, max_i::Int=100, para::Int=2)
     #c1::Float64 = 0.49445
     #c2::Float64 = 0.49445
 
@@ -92,10 +92,10 @@ function PSOmin(pop_size::Int = 100, max_i::Int = 100, para::Int = 2)
     #pop_max::Int = 100
     #pop_min::Int = -100
 
-    P = (pos_max - pos_min)*rand(Float64, (pop_size, para)) .+ pos_min
-    V = (v_max - v_min)*rand(Float64, (pop_size, para)) .+ v_min
+    P = (pos_max - pos_min) * rand(Float64, (pop_size, para)) .+ pos_min
+    V = (v_max - v_min) * rand(Float64, (pop_size, para)) .+ v_min
     L = P
-    g_best = (pos_max - pos_min)*rand(Float64, para) .+ pos_min
+    g_best = (pos_max - pos_min) * rand(Float64, para) .+ pos_min
     for i in 1:pop_size
         if f(P[i, 1], P[i, 2]) < f(g_best[1], g_best[2])
             g_best = P[i, :]
@@ -105,8 +105,8 @@ function PSOmin(pop_size::Int = 100, max_i::Int = 100, para::Int = 2)
     for i in 1:max_i
         #fit, g_best = fitness(P, L, g_best, g_best_fit)
         for j in 1:pop_size
-            V[j, 1] = V[j, 1] + c1*rand()*(L[j, 1] - P[j, 1]) + c2*rand()*(g_best[1] - P[j, 1])
-            V[j, 2] = V[j, 2] + c1*rand()*(L[j, 2] - P[j, 2]) + c2*rand()*(g_best[2] - P[j, 2])
+            V[j, 1] = V[j, 1] + c1 * rand() * (L[j, 1] - P[j, 1]) + c2 * rand() * (g_best[1] - P[j, 1])
+            V[j, 2] = V[j, 2] + c1 * rand() * (L[j, 2] - P[j, 2]) + c2 * rand() * (g_best[2] - P[j, 2])
             P[j, 1] = P[j, 1] + V[j, 1]
             P[j, 2] = P[j, 2] + V[j, 2]
             if P[j, 1] < pos_min || P[j, 1] > pos_max || P[j, 2] < pos_min || P[j, 2] > pos_max

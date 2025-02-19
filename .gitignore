@@ -1,6 +1,3 @@
 **/Manifest.toml
 **/.vscode
 **/*.bson
-NN/bessel_test.jl
-NN/bessel_train.jl
-NN/model_creation.jl

@@ -4,8 +4,6 @@ using Plots
 using LinearAlgebra, Statistics, Flux, Random, MLDatasets, BSON
 using Flux: crossentropy, onecold, onehotbatch, train!
 
-Random.seed!(1)
-
 x_tr_raw, y_tr_raw = MNIST.(split=:train)[:]
 x_te_raw, y_te_raw = MNIST.(split=:test)[:]
 
@@ -98,5 +96,5 @@ function main(model, epoc::Int)
     BSON.@save "mymodel.bson" model
 
     y = y_te_raw
-    mean(y_hat .== y)*100
+    mean(y_hat .== y) * 100
 end

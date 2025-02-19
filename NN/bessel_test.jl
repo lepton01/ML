@@ -6,18 +6,25 @@ using Flux: mae
 include("bessel_train.jl")
 include("model_creation.jl")
 
-s::String = "modelo_benjas"
+s::String = "benchmark_model"
 x_max::Float32 = 50
 a_max::Float32 = 50
-n::Int = 5_000
+n::Int = 1_000
 
 #bessel_model_creation(s)
 
-#@time bessel_train!(x_max*rand32(n), a_max*rand32(n), s, 1_000)
-#@code_warntype bessel_train!(x_max*rand32(n), a_max*rand32(n), s, 1_000)
+#@time bessel_train!(x_max*rand32(n), a_max*rand32(n), s, 10_000)
+#@code_warntype bessel_train!(x_max*rand32(n), a_max*rand32(n), s, 10_000)
 
-#@time bessel_train!(x_max, a_max, n, s, 1_000)
-#@code_warntype bessel_train!(x_max, a_max, n, s, 1_000)
+#@time bessel_train!(x_max, a_max, n, s, 10_000)
+#@code_warntype bessel_train!(x_max, a_max, n, s, 10_000)
+
+#@time bessel_train_cpu!(x_max*rand32(n), a_max*rand32(n), s, 10_000)
+#@code_warntype bessel_train_cpu!(x_max*rand32(n), a_max*rand32(n), s, 10_000)
+
+#@time bessel_train!(x_max, a_max, n, s, 10_000)
+#@code_warntype bessel_train!(x_max, a_max, n, s, 10_000)
+
 
 x_test::Float32 = x_max*rand32()
 a_test::Float32 = a_max*rand32()

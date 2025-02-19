@@ -7,11 +7,11 @@ using Statistics, Random, LinearAlgebra, MLJBase
 """
     Activation functions.
 """
-sigmoid(x::Float64)::Float64 = one(x)/(one(x) + exp(-x))
+sigmoid(x::Float64)::Float64 = one(x) / (one(x) + exp(-x))
 
 function sigmoid_back(x::Float64)::Float64
     s = sigmoid(x)
-    s*(one(s) - s)
+    s * (one(s) - s)
 end
 
 ReLU(x::Float64)::Float64 = x > zero(x) ? x : zero(x)
@@ -22,10 +22,10 @@ ReLU_back(x::Float64)::Float64 = x > zero(x) ? one(x) : zero(x)
 """
     Initialization of weights (wi) and biases (bi). Each layer is represented by a dictionary with keys being the names for the w and b of each neuron i.
 """
-function init_para(layer_dims::Vector)::Dict{String, Array{Float64}}
-    A = Dict{String, Array{Float64}}()
+function init_para(layer_dims::Vector)::Dict{String,Array{Float64}}
+    A = Dict{String,Array{Float64}}()
     for i in 2:eachindex(layer_dims)
-        A[string("w", i - 1)] = rand(Float64, (layer_dims[i], layer_dims[i - 1]))/sqrt(i - 1)
+        A[string("w", i - 1)] = rand(Float64, (layer_dims[i], layer_dims[i-1])) / sqrt(i - 1)
         A[string("b", i - 1)] = zeros(Float64, layer_dims[i])
     end
 
@@ -37,11 +37,11 @@ end
     Forward propagation.
 """
 function fwd_prop(X::Array{Float64},
-    para::Dict{String, Array{Float64}},
+    para::Dict{String,Array{Float64}},
     aktiv::Tuple)
 
     n_layers::Int = length(para) ÷ 2
-    cache = Dict{String, Array{Float64}}()
+    cache = Dict{String,Array{Float64}}()
     cache[string("A", 0)] = X
 
     for i in 1:n_layers
@@ -70,7 +70,7 @@ function cost_bin(A::Array{Float64},
 
     @assert length(A) == length(B) "Not the same size."
     l = length(A)
-    cost = - sum(A.*log.(B) .+ (1 .- A).*log.(1 .- B))/l
+    cost = -sum(A .* log.(B) .+ (1 .- A) .* log.(1 .- B)) / l
     cost
 end
 
@@ -83,23 +83,23 @@ function back_prop(A::Array,
     para::Dict,
     cache::Dict,
     layer_dims::Vector,
-    aktiv::Tuple)::Dict{String, Array{Float64}}
+    aktiv::Tuple)::Dict{String,Array{Float64}}
 
     n_layers = length(layer_dims)
     @assert length(A) == length(B) "Not the same size."
     l = size(A)[2]
-    dA = -A./B .+ (1 .- A)./(1 .- B)
+    dA = -A ./ B .+ (1 .- A) ./ (1 .- B)
     if all(isnan.(dA))
         println("¡dA es NaN!")
         dA = rand(Float64)
     end
 
-    grads = Dict{String, Array{Float64}}()
-    for i in n_layers - 1:-1:1
-        dy = dA.*aktiv[i].(cache[string("y", i)])
-        grads[string("dw", i)] = 1/l.*(dy*transpose(cache[string("A", i - 1)]))
-        grads[string("db", i)] = 1/l.*sum(dy, dims = 2)
-        dA = transpose(para[string("w", i)])*dy
+    grads = Dict{String,Array{Float64}}()
+    for i in n_layers-1:-1:1
+        dy = dA .* aktiv[i].(cache[string("y", i)])
+        grads[string("dw", i)] = 1 / l .* (dy * transpose(cache[string("A", i - 1)]))
+        grads[string("db", i)] = 1 / l .* sum(dy, dims=2)
+        dA = transpose(para[string("w", i)]) * dy
     end
 
     grads
@@ -109,15 +109,15 @@ end
 """
     Update parameters.
 """
-function up_para(para::Dict{String, Array{Float64}},
-    grads::Dict{String, Array{Float64}},
+function up_para(para::Dict{String,Array{Float64}},
+    grads::Dict{String,Array{Float64}},
     layer_dims::Array{Int},
-    learn_rate::Number)::Dict{String, Array{Float64}}
+    learn_rate::Number)::Dict{String,Array{Float64}}
 
     n_layers = length(layer_dims)
-    for i = 1:n_layers - 1
-        para[string("w", i)] -= learn_rate.*grads[string("dw", i)]
-        para[string("b", i)] -= learn_rate.*grads[string("db", i)]
+    for i = 1:n_layers-1
+        para[string("w", i)] -= learn_rate .* grads[string("dw", i)]
+        para[string("b", i)] -= learn_rate .* grads[string("db", i)]
     end
 
     para
@@ -142,7 +142,7 @@ end
     ...
 """
 function reshape_M!(M::Array)
-    M = convert(Array{Float64, ndims(M)}, M)
+    M = convert(Array{Float64,ndims(M)}, M)
     M = reshape(M, 1, :)
     M
 end
@@ -171,11 +171,11 @@ function neural_net_dense(X::Vector, Y::Vector,
     layer_dims::Array{Int},
     n_it::Int,
     learn_rate::Real;
-    activations = nothing,
-    print_stats = false,
-    parameters = nothing,
-    resume = false,
-    checkpoint_steps = 100)
+    activations=nothing,
+    print_stats=false,
+    parameters=nothing,
+    resume=false,
+    checkpoint_steps=100)
 
     n_layers = length(layer_dims)
     Y = reshape_M!(Y)
@@ -184,11 +184,11 @@ function neural_net_dense(X::Vector, Y::Vector,
     begin
         if activations === nothing
             activations = Vector{Function}(undef, n_layers - 1)
-            for i = 1:n_layers - 2
+            for i = 1:n_layers-2
                 activations[i] = ReLU
             end
 
-            activations[n_layers - 1] = sigmoid
+            activations[n_layers-1] = sigmoid
         end
 
         activations = Tuple(activations)
@@ -274,11 +274,11 @@ function predict(X, Y, para::Array, activations::Tuple)
 
     accuracy = nothing
     if Y !== nothing
-        accuracy = sum(predicts .== Y)/m
+        accuracy = sum(predicts .== Y) / m
         println("Accuracy is $(accuracy*100)%.")
     end
     predicts, accuracy
 end
 
-x_tr_raw, y_tr_raw = MNIST.(split = :train)[:]
-x_te_raw, y_te_raw = MNIST.(split = :test)[:]
+x_tr_raw, y_tr_raw = MNIST.(split=:train)[:]
+x_te_raw, y_te_raw = MNIST.(split=:test)[:]

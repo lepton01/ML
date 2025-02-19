@@ -3,7 +3,7 @@
 using Statistics, Random, LinearAlgebra
 Random.seed!(1)
 
-f(x::Real, y::Real) = x*sin(4x) + 1.1y*sin(2y)
+f(x::Real, y::Real) = x * sin(4x) + 1.1y * sin(2y)
 #=
 function fitness(P::AbstractArray, L::AbstractArray, g_best, g_best_fit)
     F = Vector{Float64}(undef, length(P[:, 1]))
@@ -23,11 +23,11 @@ function mov(P::AbstractArray, V::AbstractArray, fit::Vector, p_best::Int)
 end
 =#
 
-function PSOmax(pop_size::Int, para::Int = 2)
+function PSOmax(pop_size::Int, para::Int=2)
     nothing
 end
 
-function PSOmin(pop_size::Int, para::Int = 2)
+function PSOmin(pop_size::Int, para::Int=2)
     c1::Float64 = 0.49445
     c2::Float64 = 0.49445
 
@@ -39,10 +39,10 @@ function PSOmin(pop_size::Int, para::Int = 2)
     pop_max::Int = 20
     pop_min::Int = -20
 
-    P = (pop_max - pop_min)*rand(Float64, (pop_size, para)) .+ pop_min
-    V = (v_max - v_min)*rand(Float64, (pop_size, para)) .+ v_min
+    P = (pop_max - pop_min) * rand(Float64, (pop_size, para)) .+ pop_min
+    V = (v_max - v_min) * rand(Float64, (pop_size, para)) .+ v_min
     L = P
-    g_best = (pop_max - pop_min)*rand(Float64, para) .+ pop_min
+    g_best = (pop_max - pop_min) * rand(Float64, para) .+ pop_min
     for i in 1:pop_size
         if f(P[i, 1], P[i, 2]) < f(g_best[1], g_best[2])
             g_best = P[i, :]
@@ -52,8 +52,8 @@ function PSOmin(pop_size::Int, para::Int = 2)
     for i in 1:max_i
         #fit, g_best = fitness(P, L, g_best, g_best_fit)
         for j in 1:pop_size
-            V[j, 1] = V[j, 1] + c1*rand()*(L[j, 1] - P[j, 1]) + c2*rand()*(g_best[1] - P[j, 1])
-            V[j, 2] = V[j, 2] + c1*rand()*(L[j, 2] - P[j, 2]) + c2*rand()*(g_best[2] - P[j, 2])
+            V[j, 1] = V[j, 1] + c1 * rand() * (L[j, 1] - P[j, 1]) + c2 * rand() * (g_best[1] - P[j, 1])
+            V[j, 2] = V[j, 2] + c1 * rand() * (L[j, 2] - P[j, 2]) + c2 * rand() * (g_best[2] - P[j, 2])
             P[j, 1] = P[j, 1] + V[j, 1]
             P[j, 2] = P[j, 2] + V[j, 2]
             if f(P[j, 1], P[j, 2]) < f(L[j, 1], L[j, 2])

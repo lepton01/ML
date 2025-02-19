@@ -31,14 +31,14 @@ f(x, y) = x * sin(4x) + 1.1y * sin(2y)
 
 function fitness(P::AbstractArray)
     v = Vector{Float64}(undef, length(P[:, 1]))
-    for i in eachindex(v)
-        v[i] = f(P[i, 1], P[i, 2])
+    for ii in eachindex(v)
+        v[ii] = f(P[ii, 1], P[ii, 2])
     end
     return v
 end
 
 function cross(S1::Vector, S2::Vector, M::Int)
-    for i in 1:M
+    for _ in 1:M
         xp = Int(ceil(2rand()))
         α = rand()
         ma = Int(ceil(2M * rand()))
@@ -70,12 +70,12 @@ function main(pop::Int, mut::Float64, para::Int=2)
     var_max = 20
     P = (var_max - var_min) * randn(Float64, (pop, para)) .+ var_min
     sel = 0.5
-    keep = Int(floor(sel * pop))
-    M = Int(round((pop - keep) / 2))
-    n_mut = Int(ceil((pop - 1) * mut * para))
+    keep = (sel * pop) |> floor |> Int
+    M = (round((pop - keep) / 2)) |> Int
+    n_mut = (ceil((pop - 1) * mut * para)) |> Int
 
-    for i in 1:max_i
-        fit = fitness(P)
+    for _ in 1:max_i
+        fit = P |> fitness
         S1 = Float64[]
         S2 = Float64[]
         c = 1
@@ -94,7 +94,7 @@ function main(pop::Int, mut::Float64, para::Int=2)
         v1 = Float64[]
         v2 = Float64[]
         v1, v2 = cross(S1, S2, M)
-        for q in 1:n_mut
+        for _ in 1:n_mut
             ϵ = Int(ceil(length(S1) * rand()))
             ζ = randn()
             v1[ϵ], v2[ϵ] = (1 - 0.1ζ) * v1[ϵ], (1 - 0.1ζ) * v2[ϵ]
