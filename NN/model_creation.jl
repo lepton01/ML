@@ -16,6 +16,6 @@ function bessel_model_creation(model_name::String)
         Dense(1024 => 1024, relu),
         Dense(1024 => 1)
     )
-    BSON.@save model_name*".bson" model
+    BSON.@save model_name * ".bson" model
     return
 end

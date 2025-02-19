@@ -25,9 +25,8 @@ n::Int = 1_000
 #@time bessel_train!(x_max, a_max, n, s, 10_000)
 #@code_warntype bessel_train!(x_max, a_max, n, s, 10_000)
 
-
-x_test::Float32 = x_max*rand32()
-a_test::Float32 = a_max*rand32()
+x_test::Float32 = x_max * rand32()
+a_test::Float32 = a_max * rand32()
 
 """
     bessel_approx(x, a, model_name)
@@ -37,7 +36,7 @@ Approximates the first kind Bessel function centered at ``a`` given ``x``. `mode
 Do not include the .bson suffix in `model_name`, as the function already appends it.
 """
 function bessel_approx(x::AbstractFloat, a::AbstractFloat, model_name::String)
-    BSON.@load model_name*".bson" model
+    BSON.@load model_name * ".bson" model
     X = Array{Float32}(undef, (2, 1))
     X[:, 1] = Float32.([x, a])
     out::Float32 = model(X)[end]
@@ -55,7 +54,7 @@ Uses CUDA to compute on the GPU.
 Do not include the .bson suffix, as the function already appends it.
 """
 function bessel_approx_gpu(x::AbstractFloat, a::AbstractFloat, model_name::String)
-    BSON.@load model_name*".bson" model
+    BSON.@load model_name * ".bson" model
     model = model |> gpu
     X = Array{Float32}(undef, (2, 1))
     X[:, 1] = Float32.([x, a])
