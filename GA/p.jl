@@ -1,7 +1,6 @@
 #Angel Ortiz
 #28/02/2023
 using Statistics, LinearAlgebra, Random, GLMakie
-Random.seed!(1)
 
 #f(x::Real, y::Real) = x*sin(4x) + 1.1y*sin(2y)
 
