@@ -1,8 +1,6 @@
+#Angel Ortiz
 #06/03/2023
-
-using Plots
 using Statistics, Random, LinearAlgebra
-Random.seed!(1)
 
 #f(x::Real, y::Real) = x*sin(4x) + 1.1y*sin(2y)
 #pos_max::Int, pos_min::Int = 0, 10
@@ -86,15 +84,15 @@ function PSOmin(pop_size::Int=100, max_i::Int=100, para::Int=2)
 
     #max_i::Int = 5000
 
-    v_max = 0.5
-    v_min = -0.5
+    v_max::Float64 = 0.5
+    v_min::Float64 = -0.5
 
     #pop_max::Int = 100
     #pop_min::Int = -100
 
     P = (pos_max - pos_min) * rand(Float64, (pop_size, para)) .+ pos_min
     V = (v_max - v_min) * rand(Float64, (pop_size, para)) .+ v_min
-    L = P
+    L = copy(P)
     g_best = (pos_max - pos_min) * rand(Float64, para) .+ pos_min
     for i in 1:pop_size
         if f(P[i, 1], P[i, 2]) < f(g_best[1], g_best[2])
@@ -102,20 +100,20 @@ function PSOmin(pop_size::Int=100, max_i::Int=100, para::Int=2)
         end
     end
 
-    for i in 1:max_i
+    for _ in 1:max_i
         #fit, g_best = fitness(P, L, g_best, g_best_fit)
-        for j in 1:pop_size
-            V[j, 1] = V[j, 1] + c1 * rand() * (L[j, 1] - P[j, 1]) + c2 * rand() * (g_best[1] - P[j, 1])
-            V[j, 2] = V[j, 2] + c1 * rand() * (L[j, 2] - P[j, 2]) + c2 * rand() * (g_best[2] - P[j, 2])
-            P[j, 1] = P[j, 1] + V[j, 1]
-            P[j, 2] = P[j, 2] + V[j, 2]
-            if P[j, 1] < pos_min || P[j, 1] > pos_max || P[j, 2] < pos_min || P[j, 2] > pos_max
-                P[j, 1], P[j, 2] = P[j, 1] - V[j, 1], P[j, 2] - V[j, 2]
+        for jj in 1:pop_size
+            V[jj, 1] = V[jj, 1] + c1 * rand() * (L[jj, 1] - P[jj, 1]) + c2 * rand() * (g_best[1] - P[jj, 1])
+            V[jj, 2] = V[jj, 2] + c1 * rand() * (L[jj, 2] - P[jj, 2]) + c2 * rand() * (g_best[2] - P[jj, 2])
+            P[jj, 1] = P[jj, 1] + V[jj, 1]
+            P[jj, 2] = P[jj, 2] + V[jj, 2]
+            if P[jj, 1] < pos_min || P[jj, 1] > pos_max || P[jj, 2] < pos_min || P[jj, 2] > pos_max
+                P[jj, 1], P[jj, 2] = P[jj, 1] - V[jj, 1], P[jj, 2] - V[jj, 2]
             else
-                if f(P[j, 1], P[j, 2]) < f(L[j, 1], L[j, 2])
-                    L[j, 1], L[j, 2] = P[j, 1], P[j, 2]
-                    if f(P[j, 1], P[j, 2]) < f(g_best[1], g_best[2])
-                        g_best = P[j, :]
+                if f(P[jj, 1], P[jj, 2]) < f(L[jj, 1], L[jj, 2])
+                    L[jj, 1], L[jj, 2] = P[jj, 1], P[jj, 2]
+                    if f(P[jj, 1], P[jj, 2]) < f(g_best[1], g_best[2])
+                        g_best = P[jj, :]
                     end
                 end
             end

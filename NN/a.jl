@@ -1,8 +1,6 @@
+#Angel Ortiz
 #11/03/2023
-
-using Plots
 using Statistics, Random, LinearAlgebra, MLJBase
-
 
 """
     Activation functions.
@@ -18,7 +16,6 @@ ReLU(x::Float64)::Float64 = x > zero(x) ? x : zero(x)
 
 ReLU_back(x::Float64)::Float64 = x > zero(x) ? one(x) : zero(x)
 
-
 """
     Initialization of weights (wi) and biases (bi). Each layer is represented by a dictionary with keys being the names for the w and b of each neuron i.
 """
@@ -28,10 +25,8 @@ function init_para(layer_dims::Vector)::Dict{String,Array{Float64}}
         A[string("w", i - 1)] = rand(Float64, (layer_dims[i], layer_dims[i-1])) / sqrt(i - 1)
         A[string("b", i - 1)] = zeros(Float64, layer_dims[i])
     end
-
     A
 end
-
 
 """
     Forward propagation.
@@ -61,7 +56,6 @@ function fwd_prop(X::Array{Float64},
     Ai, cache
 end
 
-
 """
     Cost computation.
 """
@@ -73,7 +67,6 @@ function cost_bin(A::Array{Float64},
     cost = -sum(A .* log.(B) .+ (1 .- A) .* log.(1 .- B)) / l
     cost
 end
-
 
 """
     Calculate changes in the parameters.
@@ -105,7 +98,6 @@ function back_prop(A::Array,
     grads
 end
 
-
 """
     Update parameters.
 """
@@ -123,7 +115,6 @@ function up_para(para::Dict{String,Array{Float64}},
     para
 end
 
-
 """
     Obtain the activations.
 """
@@ -137,7 +128,6 @@ function get_aktiv(aktiv)
     aktiv_back
 end
 
-
 """
     ...
 """
@@ -146,7 +136,6 @@ function reshape_M!(M::Array)
     M = reshape(M, 1, :)
     M
 end
-
 
 """
     neural_network_dense(X, Y, layer_dims::Array{Int}, num_iterations::Int, learning_rate::Number; activations=Nothing, print_stats=false, parameters=nothing, resume=false, checkpoint_steps=100)
@@ -239,7 +228,6 @@ function neural_net_dense(X::Vector, Y::Vector,
 
     parameters, activations
 end
-
 
 """
     predict(X, Y, parameters, activations::Tuple)

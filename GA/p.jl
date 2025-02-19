@@ -73,7 +73,6 @@ function main(pop::Int, mut::Float64, para::Int=2)
     keep = (sel * pop) |> floor |> Int
     M = (round((pop - keep) / 2)) |> Int
     n_mut = (ceil((pop - 1) * mut * para)) |> Int
-
     for _ in 1:max_i
         fit = P |> fitness
         S1 = Float64[]
@@ -103,3 +102,6 @@ function main(pop::Int, mut::Float64, para::Int=2)
     end
     return P
 end
+
+##
+main(10,0.2)

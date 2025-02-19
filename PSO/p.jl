@@ -1,7 +1,6 @@
+#Angel Ortiz
 #06/03/2023
-
 using Statistics, Random, LinearAlgebra
-Random.seed!(1)
 
 f(x::Real, y::Real) = x * sin(4x) + 1.1y * sin(2y)
 #=
@@ -49,20 +48,20 @@ function PSOmin(pop_size::Int, para::Int=2)
         end
     end
 
-    for i in 1:max_i
+    for _ in 1:max_i
         #fit, g_best = fitness(P, L, g_best, g_best_fit)
-        for j in 1:pop_size
-            V[j, 1] = V[j, 1] + c1 * rand() * (L[j, 1] - P[j, 1]) + c2 * rand() * (g_best[1] - P[j, 1])
-            V[j, 2] = V[j, 2] + c1 * rand() * (L[j, 2] - P[j, 2]) + c2 * rand() * (g_best[2] - P[j, 2])
-            P[j, 1] = P[j, 1] + V[j, 1]
-            P[j, 2] = P[j, 2] + V[j, 2]
-            if f(P[j, 1], P[j, 2]) < f(L[j, 1], L[j, 2])
-                L[j, 1], L[j, 2] = P[j, 1], P[j, 2]
-                if f(P[j, 1], P[j, 2]) < f(g_best[1], g_best[2])
-                    g_best = P[j, :]
+        for jj in 1:pop_size
+            V[jj, 1] = V[jj, 1] + c1 * rand() * (L[jj, 1] - P[jj, 1]) + c2 * rand() * (g_best[1] - P[jj, 1])
+            V[jj, 2] = V[jj, 2] + c1 * rand() * (L[jj, 2] - P[jj, 2]) + c2 * rand() * (g_best[2] - P[jj, 2])
+            P[jj, 1] = P[jj, 1] + V[jj, 1]
+            P[jj, 2] = P[jj, 2] + V[jj, 2]
+            if f(P[jj, 1], P[jj, 2]) < f(L[jj, 1], L[jj, 2])
+                L[jj, 1], L[jj, 2] = P[jj, 1], P[jj, 2]
+                if f(P[jj, 1], P[jj, 2]) < f(g_best[1], g_best[2])
+                    g_best = P[jj, :]
                 end
             end
         end
     end
-    P
+    return P
 end
