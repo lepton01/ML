@@ -3,7 +3,6 @@
 using Statistics, LinearAlgebra, Random, GLMakie
 
 #f(x::Real, y::Real) = x*sin(4x) + 1.1y*sin(2y)
-
 #f(x::Real, y::Real) = sqrt(x*y)*sin(x)*sin(y)
 #[0, 10]
 
