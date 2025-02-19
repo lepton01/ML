@@ -24,16 +24,17 @@ cr = crom([], 0)
 
 max_i::Int = 1000
 #max_cost = 999_999_999
-
+"""
+    Test function to optimize.
+"""
 f(x, y) = x * sin(4x) + 1.1y * sin(2y)
 
 function fitness(P::AbstractArray)
     v = Vector{Float64}(undef, length(P[:, 1]))
-
     for i in eachindex(v)
         v[i] = f(P[i, 1], P[i, 2])
     end
-    v
+    return v
 end
 
 function cross(S1::Vector, S2::Vector, M::Int)
@@ -61,7 +62,7 @@ function cross(S1::Vector, S2::Vector, M::Int)
             push!(S2, S2[ma])
         end
     end
-    S1, S2
+    return S1, S2
 end
 
 function main(pop::Int, mut::Float64, para::Int=2)
@@ -100,5 +101,5 @@ function main(pop::Int, mut::Float64, para::Int=2)
         end
         P = hcat(v1, v2)
     end
-    P
+    return P
 end
