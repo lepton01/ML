@@ -13,7 +13,7 @@ function fitness(P::Array{<:Real})
     return v
 end
 
-function cross(S1::Vector{<:Real}, S2::Vector{<:Real}, M::Int)
+function cross(S1::Vector{<:Real}, S2::Vector{<:Real}, M::Integer)
     @inbounds @views for _ ∈ 1:M
         xp = ceil(2 * rand())
         ω = rand()
@@ -34,7 +34,7 @@ function cross(S1::Vector{<:Real}, S2::Vector{<:Real}, M::Int)
     return S1, S2
 end
 
-function main(pop::Int, mut; para::Int=2, max_i::Int=10)
+function main(pop::Integer, mut; para::Integer=2, max_i::Integer=10)
     var_min = -50
     var_max = 50
     P = (var_max - var_min) * randn((pop, para)) .+ var_min
@@ -74,7 +74,7 @@ function main(pop::Int, mut; para::Int=2, max_i::Int=10)
     end
     return P, pob_save
 end
-main(2,0;max_i=1);
+main(2, 0; max_i=1);
 
 ##
 @time P, p = main(40, 0.3; max_i=100);
