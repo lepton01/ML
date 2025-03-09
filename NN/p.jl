@@ -1,7 +1,6 @@
+#Angel Ortiz
 #25/02/2023
-
-using Plots
-using LinearAlgebra, Statistics, Flux, Random, MLDatasets, BSON
+using GLMakie, LinearAlgebra, Statistics, Flux, Random, MLDatasets, BSON, ProgressMeter
 using Flux: crossentropy, onecold, onehotbatch, train!
 
 x_tr_raw, y_tr_raw = MNIST.(split=:train)[:]
@@ -12,7 +11,6 @@ x_test = Flux.flatten(x_te_raw)
 
 y_train = onehotbatch(y_tr_raw, 0:9)
 y_test = onehotbatch(y_te_raw, 0:9)
-
 
 model1 = Chain(
     Dense(28^2, 2, relu),
@@ -65,7 +63,6 @@ model7 = Chain(
     Dense(128, 10),
     softmax
 )
-
 """
     main(model, epoch)
 
@@ -74,27 +71,21 @@ model can be selected and it specifies the structure of the network, number of l
 epoc is an integer representing the number of iterations to be made.
 """
 function main(model, epoc::Int)
-    loss(x, y) = crossentropy(model(x), y)
-
-    ps = Flux.params(model)
-
+    loss(m, x, y) = crossentropy(m(x), y)
     lr = 0.01
-    opt = ADAM(lr)
-
+    opt = Flux.setup(Adam(lr), model)
     loss_h = []
-
-    for i in 1:epoc
-        train!(loss, ps, [(x_train, y_train)], opt)
-        train_l = loss(x_train, y_train)
+    @showprogress for _ ∈ 1:epoc
+        train!(loss, model, [(x_train, y_train)], opt)
+        train_l = loss(model, x_train, y_train)
         push!(loss_h, train_l)
-        #println("Epoch = $i : Training loss = $train_l")
+        #println("Epoch = $ii : Training loss = $train_l")
     end
-
     y_hat_raw = model(x_test)
     y_hat = onecold(y_hat_raw) .- 1
-
-    BSON.@save "mymodel.bson" model
-
-    y = y_te_raw
-    mean(y_hat .== y) * 100
+    BSON.@save "model_4.bson" model
+    mean(y_hat .== y_te_raw) * 100
 end
+
+##
+main(model4, 50)

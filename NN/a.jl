@@ -1,73 +1,63 @@
 #Angel Ortiz
 #11/03/2023
 using Statistics, Random, LinearAlgebra, MLJBase
-
 """
-    Activation functions.
+    Sigmiod activation function.
 """
-sigmoid(x::Float64)::Float64 = one(x) / (one(x) + exp(-x))
+sigmoid(x::Real) = one(x) / (one(x) + exp(-x))
 
-function sigmoid_back(x::Float64)::Float64
+function sigmoid_back(x::Real)
     s = sigmoid(x)
-    s * (one(s) - s)
+    return s * (one(s) - s)
 end
+"""
+    Rectified Linear Unit activation function.
+"""
+ReLU(x::Real) = x > zero(x) ? x : zero(x)
 
-ReLU(x::Float64)::Float64 = x > zero(x) ? x : zero(x)
-
-ReLU_back(x::Float64)::Float64 = x > zero(x) ? one(x) : zero(x)
-
+ReLU_back(x::Real) = x > zero(x) ? one(x) : zero(x)
 """
     Initialization of weights (wi) and biases (bi). Each layer is represented by a dictionary with keys being the names for the w and b of each neuron i.
 """
 function init_para(layer_dims::Vector)::Dict{String,Array{Float64}}
     A = Dict{String,Array{Float64}}()
-    for i in 2:eachindex(layer_dims)
-        A[string("w", i - 1)] = rand(Float64, (layer_dims[i], layer_dims[i-1])) / sqrt(i - 1)
-        A[string("b", i - 1)] = zeros(Float64, layer_dims[i])
+    for ii ∈ 2:eachindex(layer_dims)
+        A[string("w", ii - 1)] = rand((layer_dims[ii], layer_dims[ii-1])) / sqrt(ii - 1)
+        A[string("b", ii - 1)] = zeros(layer_dims[ii])
     end
-    A
+    return A
 end
-
 """
     Forward propagation.
 """
 function fwd_prop(X::Array{Float64},
     para::Dict{String,Array{Float64}},
     aktiv::Tuple)
-
     n_layers::Int = length(para) ÷ 2
     cache = Dict{String,Array{Float64}}()
     cache[string("A", 0)] = X
-
-    for i in 1:n_layers
+    for ii ∈ 1:n_layers
         begin
-            wi = para[string("w", i)]
-            Ai_ant = cache[string("A", i - 1)]
+            wi = para[string("w", ii)]
+            Ai_ant = cache[string("A", ii - 1)]
             yi = zeros(Float64, (size(wi)[1], size(Ai_ant)[2]))
             mul!(yi, wi, Ai_ant)
-            yi .+= para[string("b", i)]
+            yi .+= para[string("b", ii)]
         end
-
-        Ai = aktiv[i].(yi)
-        cache[string("y", i)] = yi
-        cache[string("A", i)] = Ai
+        Ai = aktiv[ii].(yi)
+        cache[string("y", ii)] = yi
+        cache[string("A", ii)] = Ai
     end
-
-    Ai, cache
+    return Ai, cache
 end
-
 """
     Cost computation.
 """
 function cost_bin(A::Array{Float64},
     B::Array{Float64})::Float64
-
     @assert length(A) == length(B) "Not the same size."
-    l = length(A)
-    cost = -sum(A .* log.(B) .+ (1 .- A) .* log.(1 .- B)) / l
-    cost
+    return -sum(A .* log.(B) .+ (1 .- A) .* log.(1 .- B)) / length(A)
 end
-
 """
     Calculate changes in the parameters.
 """
@@ -77,27 +67,23 @@ function back_prop(A::Array,
     cache::Dict,
     layer_dims::Vector,
     aktiv::Tuple)::Dict{String,Array{Float64}}
-
     n_layers = length(layer_dims)
     @assert length(A) == length(B) "Not the same size."
-    l = size(A)[2]
+    l = size(A, 2)
     dA = -A ./ B .+ (1 .- A) ./ (1 .- B)
     if all(isnan.(dA))
         println("¡dA es NaN!")
-        dA = rand(Float64)
+        dA = rand()
     end
-
     grads = Dict{String,Array{Float64}}()
-    for i in n_layers-1:-1:1
-        dy = dA .* aktiv[i].(cache[string("y", i)])
-        grads[string("dw", i)] = 1 / l .* (dy * transpose(cache[string("A", i - 1)]))
-        grads[string("db", i)] = 1 / l .* sum(dy, dims=2)
-        dA = transpose(para[string("w", i)]) * dy
+    for ii ∈ n_layers-1:-1:1
+        dy = dA .* aktiv[i].(cache[string("y", ii)])
+        grads[string("dw", ii)] = 1 / l .* (dy * transpose(cache[string("A", ii - 1)]))
+        grads[string("db", ii)] = 1 / l .* sum(dy, dims=2)
+        dA = transpose(para[string("w", ii)]) * dy
     end
-
-    grads
+    return grads
 end
-
 """
     Update parameters.
 """
@@ -105,38 +91,30 @@ function up_para(para::Dict{String,Array{Float64}},
     grads::Dict{String,Array{Float64}},
     layer_dims::Array{Int},
     learn_rate::Number)::Dict{String,Array{Float64}}
-
     n_layers = length(layer_dims)
-    for i = 1:n_layers-1
-        para[string("w", i)] -= learn_rate .* grads[string("dw", i)]
-        para[string("b", i)] -= learn_rate .* grads[string("db", i)]
+    for ii ∈ 1:n_layers-1
+        para[string("w", ii)] -= learn_rate .* grads[string("dw", ii)]
+        para[string("b", ii)] -= learn_rate .* grads[string("db", ii)]
     end
-
-    para
+    return para
 end
-
 """
     Obtain the activations.
 """
 function get_aktiv(aktiv)
     aktiv_back = []
-    for activation in aktiv
+    for activation ∈ aktiv
         push!(aktiv_back, @eval($(Symbol("$activation", "_back"))))
     end
-
-    aktiv_back = Tuple(aktiv_back)
-    aktiv_back
+    return Tuple(aktiv_back)
 end
-
 """
     ...
 """
 function reshape_M!(M::Array)
     M = convert(Array{Float64,ndims(M)}, M)
-    M = reshape(M, 1, :)
-    M
+    return reshape(M, 1, :)
 end
-
 """
     neural_network_dense(X, Y, layer_dims::Array{Int}, num_iterations::Int, learning_rate::Number; activations=Nothing, print_stats=false, parameters=nothing, resume=false, checkpoint_steps=100)
     Build and train a dense neural network for binary classification. Performs batch gradient descent for optimization and uses binary logistic loss for cost function.
@@ -165,25 +143,20 @@ function neural_net_dense(X::Vector, Y::Vector,
     parameters=nothing,
     resume=false,
     checkpoint_steps=100)
-
     n_layers = length(layer_dims)
     Y = reshape_M!(Y)
     @assert ndims(Y) == 2 "No dimension match."
-
     begin
         if activations === nothing
             activations = Vector{Function}(undef, n_layers - 1)
-            for i = 1:n_layers-2
-                activations[i] = ReLU
+            for ii ∈ 1:n_layers-2
+                activations[ii] = ReLU
             end
-
             activations[n_layers-1] = sigmoid
         end
-
         activations = Tuple(activations)
         activations_back = get_aktiv(activations)
     end
-
     begin
         init_params = false
         if !resume
@@ -192,43 +165,37 @@ function neural_net_dense(X::Vector, Y::Vector,
             println("Cannot resume without parameters, pass parameters = parameters to resume training, reinitializing parameters.")
             init_params = true
         end
-
         if init_params
             parameters = init_para(layer_dims)
         end
     end
-
     if print_stats
-        for i in eachindex(parameters)
-            println("\tInitial mean of parameter ", i, " is ", mean(parameters[i]), ".")
-            println("\tInitial variance of parameter ", i, " is ", var(parameters[i]), ".")
+        for ii ∈ eachindex(parameters)
+            println("\tInitial mean of parameter $ii is ", mean(parameters[ii]), ".")
+            println("\tInitial variance of parameter $ii is ", var(parameters[ii]), ".")
         end
     end
-
     begin
-        for iteration = 1:n_it
+        for iteration ∈ 1:n_it
             B, cache = fwd_prop(X, parameters, activations)
             grads = back_prop(Y, B, parameters, cache, layer_dims, activations_back)
             parameters = up_para(parameters, grads, layer_dims, learn_rate)
-
             begin
                 if iteration % checkpoint_steps == 0
                     cost = cost_bin(Y, B)
                     println("Cost at iteration $iteration is $cost")
                     if print_stats
-                        for i in eachindex(parameters)
-                            println("\tMean of parameter ", i, " is ", mean(parameters[i]))
-                            println("\tVariance of parameter ", i, " is ", var(parameters[i]))
+                        for ii in eachindex(parameters)
+                            println("\tMean of parameter $ii is ", mean(parameters[ii]))
+                            println("\tVariance of parameter $ii is ", var(parameters[ii]))
                         end
                     end
                 end
             end
         end
     end
-
-    parameters, activations
+    return parameters, activations
 end
-
 """
     predict(X, Y, parameters, activations::Tuple)
     Predict using the trained parameters and calculate the accuracy.
@@ -243,30 +210,26 @@ end
 """
 function predict(X, Y, para::Array, activations::Tuple)
     m = size(X)[2]
-    l = length(para)
+    #l = length(para)
     predicts = zeros((1, m))
-
-    # Copy Y to CPU
+    #copy Y to CPU
     if Y !== nothing
         Y = Array(Y)
         Y = reshape_Y(Y)
     end
-
-    probs, cache = fwd_prop(X, para, activations)
+    probs, _ = fwd_prop(X, para, activations)
     begin
         probs = Array(probs)
-        for i = 1:m
-            probs[1, i] > 0.5 ? predicts[1, i] = 1 : predicts[1, i] = 0
+        for ii = 1:m
+            probs[1, ii] > 0.5 ? predicts[1, ii] = 1 : predicts[1, ii] = 0
         end
     end
-
     accuracy = nothing
     if Y !== nothing
         accuracy = sum(predicts .== Y) / m
         println("Accuracy is $(accuracy*100)%.")
     end
-    predicts, accuracy
+    return predicts, accuracy
 end
-
 x_tr_raw, y_tr_raw = MNIST.(split=:train)[:]
 x_te_raw, y_te_raw = MNIST.(split=:test)[:]
